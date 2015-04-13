@@ -12,8 +12,6 @@ into HTTP/2 frames.
 This library is used directly by `hyper`_ and a number of other projects to
 provide HTTP/2 frame decoding logic.
 
-.. _hyper: https://hyper.readthedocs.org/
-
 Contributing
 ============
 
