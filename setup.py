@@ -30,7 +30,7 @@ if sys.argv[-1] == 'publish':
 packages = ['hyperframe']
 
 setup(
-    name='hyper',
+    name='hyperframe',
     version=version,
     description='HTTP/2 framing layer for Python',
     long_description=open('README.rst').read() + '\n\n' + open('HISTORY.rst').read(),
@@ -43,7 +43,7 @@ setup(
     include_package_data=True,
     license='MIT License',
     classifiers=[
-        'Development Status :: 3 - Alpha',
+        'Development Status :: 5 - Production/Stable',
         'Intended Audience :: Developers',
         'License :: OSI Approved :: MIT License',
         'Programming Language :: Python',
