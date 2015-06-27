@@ -95,6 +95,21 @@ class TestDataFrame(object):
         with pytest.raises(ValueError):
             DataFrame(0)
 
+    def test_long_data_frame(self):
+        f = DataFrame(1)
+
+        # Use more than 256 bytes of data to force setting higher bits.
+        f.data = b'\x01' * 300
+        data = f.serialize()
+
+        # The top three bytes should be numerically equal to 300. That means
+        # they should read 00 01 2C.
+        # The weird double index trick is to ensure this test behaves equally
+        # on Python 2 and Python 3.
+        assert data[0] == b'\x00'[0]
+        assert data[1] == b'\x01'[0]
+        assert data[2] == b'\x2C'[0]
+
 
 class TestPriorityFrame(object):
     payload = b'\x00\x00\x05\x02\x00\x00\x00\x00\x01\x80\x00\x00\x04\x40'
