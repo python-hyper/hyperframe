@@ -75,7 +75,7 @@ class Frame(object):
 
         header = struct.pack(
             "!HBBBL",
-            body_len & 0xFFFF00,  # Length is spread over top 24 bits
+            (body_len & 0xFFFF00) >> 8,  # Length is spread over top 24 bits
             body_len & 0x0000FF,
             self.type,
             flags,
