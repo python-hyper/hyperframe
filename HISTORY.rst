@@ -1,6 +1,11 @@
 Release History
 ===============
 
+1.0.1 (XXXX-XX-XX)
+------------------
+
+- Fix bug where the frame header would have an incorrect length added to it.
+
 1.0.0 (2015-04-12)
 ------------------
 
