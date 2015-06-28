@@ -110,6 +110,19 @@ class TestDataFrame(object):
         assert data[1] == b'\x01'[0]
         assert data[2] == b'\x2C'[0]
 
+    def test_body_length_behaves_correctly(self):
+        f = DataFrame(1)
+
+        f.data = b'\x01' * 300
+
+        # Initially the body length is zero. For now this is incidental, but
+        # I'm going to test it to ensure that the behaviour is codified. We
+        # should change this test if we change that.
+        assert f.body_len == 0
+
+        data = f.serialize()
+        assert f.body_len == 300
+
 
 class TestPriorityFrame(object):
     payload = b'\x00\x00\x05\x02\x00\x00\x00\x00\x01\x80\x00\x00\x04\x40'
