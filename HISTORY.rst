@@ -1,6 +1,12 @@
 Release History
 ===============
 
+1.1.0 (2015-06-28)
+------------------
+
+- Add ``body_len`` property to frames to enable introspection of the actual
+  frame length. Thanks to @jdecuyper!
+
 1.0.1 (2015-06-27)
 ------------------
 
