@@ -40,6 +40,15 @@ class Frame(object):
         if self.stream_association == 'no-stream' and self.stream_id:
             raise ValueError('Stream ID must be zero')
 
+    def __repr__(self):
+        flags = ", ".join(self.flags) or "None"
+        body = self.serialize_body()
+        if len(body) > 100:
+            body = str(body[:100]) + "..."
+        return (
+            "{type}(Stream: {stream}; Flags: {flags}): {body}"
+        ).format(type=type(self).__name__, stream=self.stream_id, flags=flags, body=body)
+
     @staticmethod
     def parse_frame_header(header):
         """
