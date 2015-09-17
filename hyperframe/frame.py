@@ -168,10 +168,10 @@ class DataFrame(Padding, Frame):
 
     stream_association = 'has-stream'
 
-    def __init__(self, stream_id):
+    def __init__(self, stream_id, data=b''):
         super(DataFrame, self).__init__(stream_id)
 
-        self.data = b''
+        self.data = data
 
     def serialize_body(self):
         padding_data = self.serialize_padding_data()
