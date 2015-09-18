@@ -32,6 +32,13 @@ class TestGeneralFrameBehaviour(object):
         with pytest.raises(NotImplementedError):
             f.parse_body(data)
 
+    def test_repr(self, monkeypatch):
+        f = Frame(0)
+        monkeypatch.setattr(Frame, "serialize_body", lambda _: "body")
+        assert repr(f) == "Frame(Stream: 0; Flags: None): body"
+
+        monkeypatch.setattr(Frame, "serialize_body", lambda _: "A"*105)
+        assert repr(f) == "Frame(Stream: 0; Flags: None): {}...".format("A"*100)
 
 class TestDataFrame(object):
     payload = b'\x00\x00\x08\x00\x01\x00\x00\x00\x01testdata'
