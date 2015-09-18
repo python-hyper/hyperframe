@@ -33,7 +33,6 @@ class Frame(object):
     def __init__(self, stream_id):
         self.stream_id = stream_id
         self.flags = set()
-        self.body_len = 0
 
         if self.stream_association == 'has-stream' and not self.stream_id:
             raise ValueError('Stream ID must be non-zero')
@@ -75,7 +74,6 @@ class Frame(object):
 
     def serialize(self):
         body = self.serialize_body()
-        self.body_len = len(body)
 
         # Build the common frame header.
         # First, get the flags.
@@ -87,8 +85,8 @@ class Frame(object):
 
         header = struct.pack(
             "!HBBBL",
-            (self.body_len & 0xFFFF00) >> 8,  # Length is spread over top 24 bits
-            self.body_len & 0x0000FF,
+            (len(body) & 0xFFFF00) >> 8,  # Length is spread over top 24 bits
+            len(body) & 0x0000FF,
             self.type,
             flags,
             self.stream_id & 0x7FFFFFFF  # Stream ID is 32 bits.
