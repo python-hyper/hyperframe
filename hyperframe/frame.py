@@ -277,11 +277,17 @@ class SettingsFrame(Frame):
     SETTINGS_MAX_FRAME_SIZE       = 0x05
     SETTINGS_MAX_HEADER_LIST_SIZE = 0x06
 
-    def __init__(self, stream_id=0):
+    def __init__(self, stream_id=0, settings=None, ack=False):
         super(SettingsFrame, self).__init__(stream_id)
 
+        if settings and ack:
+            raise ValueError("Settings must be empty if ACK flag is set.")
+
         # A dictionary of the setting type byte to the value.
-        self.settings = {}
+        self.settings = settings or {}
+
+        if ack:
+            self.flags.add('ACK')
 
     def serialize_body(self):
         settings = [struct.pack("!HL", setting & 0xFF, value)
