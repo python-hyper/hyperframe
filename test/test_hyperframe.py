@@ -32,6 +32,10 @@ class TestGeneralFrameBehaviour(object):
         with pytest.raises(NotImplementedError):
             f.parse_body(data)
 
+    def test_parse_frame_header_unknown_type(self):
+        with pytest.raises(ValueError):
+            Frame.parse_frame_header(b'\x00\x00\x00\xFF\x00\x00\x00\x00\x01')
+
     def test_repr(self, monkeypatch):
         f = Frame(stream_id=0)
         monkeypatch.setattr(Frame, "serialize_body", lambda _: "body")
