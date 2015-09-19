@@ -107,10 +107,10 @@ class Padding(object):
     """
     Mixin for frames that contain padding.
     """
-    def __init__(self, stream_id):
+    def __init__(self, *args, **kwargs):
         self.pad_length = 0
 
-        super(Padding, self).__init__(stream_id)
+        super(Padding, self).__init__(*args, **kwargs)
 
     def serialize_padding_data(self):
         if 'PADDED' in self.flags:
@@ -133,7 +133,7 @@ class Priority(object):
     """
     Mixin for frames that contain priority data.
     """
-    def __init__(self, stream_id):
+    def __init__(self, *args, **kwargs):
         # The stream ID of the stream on which this stream depends.
         self.depends_on = None
 
@@ -143,7 +143,7 @@ class Priority(object):
         # Whether the exclusive bit was set.
         self.exclusive = None
 
-        super(Priority, self).__init__(stream_id)
+        super(Priority, self).__init__(*args, **kwargs)
 
     def serialize_priority_data(self):
         return struct.pack(
