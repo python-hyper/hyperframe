@@ -240,12 +240,12 @@ class TestSettingsFrame(object):
         assert f.settings == {}
 
     def test_settings_frame_with_ack(self):
-        f = SettingsFrame(ack=True)
+        f = SettingsFrame(flags=('ACK',))
         assert 'ACK' in f.flags
 
     def test_settings_frame_ack_and_settings(self):
         with pytest.raises(ValueError):
-            SettingsFrame(settings=self.settings, ack=True)
+            SettingsFrame(settings=self.settings, flags=('ACK',))
 
     def test_settings_frame_parses_properly(self):
         f = decode_frame(self.serialized)
