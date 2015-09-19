@@ -16,24 +16,24 @@ def decode_frame(frame_data):
 
 class TestGeneralFrameBehaviour(object):
     def test_base_frame_ignores_flags(self):
-        f = Frame(0)
+        f = Frame(stream_id=0)
         flags = f.parse_flags(0xFF)
         assert not flags
         assert isinstance(flags, set)
 
     def test_base_frame_cant_serialize(self):
-        f = Frame(0)
+        f = Frame(stream_id=0)
         with pytest.raises(NotImplementedError):
             f.serialize()
 
     def test_base_frame_cant_parse_body(self):
         data = b''
-        f = Frame(0)
+        f = Frame(stream_id=0)
         with pytest.raises(NotImplementedError):
             f.parse_body(data)
 
     def test_repr(self, monkeypatch):
-        f = Frame(0)
+        f = Frame(stream_id=0)
         monkeypatch.setattr(Frame, "serialize_body", lambda _: "body")
         assert repr(f) == "Frame(Stream: 0; Flags: None): body"
 
@@ -215,12 +215,12 @@ class TestSettingsFrame(object):
     }
 
     def test_settings_frame_has_only_one_flag(self):
-        f = SettingsFrame(0)
+        f = SettingsFrame()
         flags = f.parse_flags(0xFF)
         assert flags == set(['ACK'])
 
     def test_settings_frame_serializes_properly(self):
-        f = SettingsFrame(0)
+        f = SettingsFrame()
         f.parse_flags(0xFF)
         f.settings = self.settings
 
@@ -236,7 +236,7 @@ class TestSettingsFrame(object):
 
     def test_settings_frames_never_have_streams(self):
         with pytest.raises(ValueError):
-            SettingsFrame(1)
+            SettingsFrame(stream_id=1)
 
 
 class TestPushPromiseFrame(object):
@@ -275,13 +275,13 @@ class TestPushPromiseFrame(object):
 
 class TestPingFrame(object):
     def test_ping_frame_has_only_one_flag(self):
-        f = PingFrame(0)
+        f = PingFrame()
         flags = f.parse_flags(0xFF)
 
         assert flags == set(['ACK'])
 
     def test_ping_frame_serializes_properly(self):
-        f = PingFrame(0)
+        f = PingFrame()
         f.parse_flags(0xFF)
         f.opaque_data = b'\x01\x02'
 
@@ -291,7 +291,7 @@ class TestPingFrame(object):
         )
 
     def test_no_more_than_8_octets(self):
-        f = PingFrame(0)
+        f = PingFrame()
         f.opaque_data = b'\x01\x02\x03\x04\x05\x06\x07\x08\x09'
 
         with pytest.raises(ValueError):
@@ -307,24 +307,24 @@ class TestPingFrame(object):
 
     def test_ping_frame_never_has_a_stream(self):
         with pytest.raises(ValueError):
-            PingFrame(1)
+            PingFrame(stream_id=1)
 
     def test_ping_frame_has_no_more_than_body_length_8(self):
-        f = PingFrame(0)
+        f = PingFrame()
         with pytest.raises(ValueError):
             f.parse_body(b'\x01\x02\x03\x04\x05\x06\x07\x08\x09')
 
 
 class TestGoAwayFrame(object):
     def test_go_away_has_no_flags(self):
-        f = GoAwayFrame(0)
+        f = GoAwayFrame()
         flags = f.parse_flags(0xFF)
 
         assert not flags
         assert isinstance(flags, set)
 
     def test_goaway_serializes_properly(self):
-        f = GoAwayFrame(0)
+        f = GoAwayFrame()
         f.last_stream_id = 64
         f.error_code = 32
         f.additional_data = b'hello'
@@ -352,7 +352,7 @@ class TestGoAwayFrame(object):
 
     def test_goaway_frame_never_has_a_stream(self):
         with pytest.raises(ValueError):
-            GoAwayFrame(1)
+            GoAwayFrame(stream_id=1)
 
 
 class TestWindowUpdateFrame(object):
@@ -482,13 +482,13 @@ class TestAltSvcFrame(object):
     )
 
     def test_altsvc_frame_flags(self):
-        f = AltSvcFrame(0)
+        f = AltSvcFrame()
         flags = f.parse_flags(0xFF)
 
         assert flags == set()
 
     def test_altsvc_frame_with_origin_serializes_properly(self):
-        f = AltSvcFrame(0)
+        f = AltSvcFrame()
         f.host = b'google.com'
         f.port = 80
         f.protocol_id = b'h2'
@@ -509,7 +509,7 @@ class TestAltSvcFrame(object):
         assert f.origin == Origin(scheme=b'https', host=b'yahoo.com', port=8080)
 
     def test_altsvc_frame_without_origin_serializes_properly(self):
-        f = AltSvcFrame(0)
+        f = AltSvcFrame()
         f.host = b'google.com'
         f.port = 80
         f.protocol_id = b'h2'
@@ -529,14 +529,14 @@ class TestAltSvcFrame(object):
         assert f.origin is None
 
     def test_altsvc_frame_serialize_origin_without_port(self):
-        f = AltSvcFrame(0)
+        f = AltSvcFrame()
         f.origin = Origin(scheme=b'https', host=b'yahoo.com', port=None)
 
         assert f.serialize_origin() == b'https://yahoo.com'
 
     def test_altsvc_frame_never_has_a_stream(self):
         with pytest.raises(ValueError):
-            AltSvcFrame(1)
+            AltSvcFrame(stream_id=1)
 
 
 class TestBlockedFrame(object):

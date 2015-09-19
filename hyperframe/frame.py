@@ -277,7 +277,7 @@ class SettingsFrame(Frame):
     SETTINGS_MAX_FRAME_SIZE       = 0x05
     SETTINGS_MAX_HEADER_LIST_SIZE = 0x06
 
-    def __init__(self, stream_id):
+    def __init__(self, stream_id=0):
         super(SettingsFrame, self).__init__(stream_id)
 
         # A dictionary of the setting type byte to the value.
@@ -329,7 +329,7 @@ class PingFrame(Frame):
 
     stream_association = 'no-stream'
 
-    def __init__(self, stream_id):
+    def __init__(self, stream_id=0):
         super(PingFrame, self).__init__(stream_id)
 
         self.opaque_data = b''
@@ -360,7 +360,7 @@ class GoAwayFrame(Frame):
 
     stream_association = 'no-stream'
 
-    def __init__(self, stream_id):
+    def __init__(self, stream_id=0):
         super(GoAwayFrame, self).__init__(stream_id)
 
         self.last_stream_id = 0
@@ -493,7 +493,7 @@ class AltSvcFrame(Frame):
 
     stream_association = 'no-stream'
 
-    def __init__(self, stream_id):
+    def __init__(self, stream_id=0):
         super(AltSvcFrame, self).__init__(stream_id)
 
         self.host = None
