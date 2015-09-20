@@ -9,16 +9,15 @@ socket.
 """
 import collections
 import struct
-try:
-    from collections.abc import MutableSet
-except ImportError:  # pragma: nocover
-    from collections import MutableSet
+
+from .flags import Flag, Flags
 
 # The maximum initial length of a frame. Some frames have shorter maximum lengths.
 FRAME_MAX_LEN = (2 ** 14)
 
 # The maximum allowed length of a frame.
 FRAME_MAX_ALLOWED_LEN = (2 ** 24) - 1
+
 
 class Frame(object):
     """
@@ -111,33 +110,6 @@ class Frame(object):
 
     def parse_body(self, data):
         raise NotImplementedError()
-
-
-Flag = collections.namedtuple("Flag", ["name", "bit"])
-
-
-class Flags(MutableSet):
-
-    def __init__(self, defined_flags):
-        self._valid_flags = set(flag.name for flag in defined_flags)
-        self._flags = set()
-
-    def __contains__(self, x):
-        return self._flags.__contains__(x)
-
-    def __iter__(self):
-        return self._flags.__iter__()
-
-    def __len__(self):
-        return self._flags.__len__()
-
-    def discard(self, value):
-        return self._flags.discard(value)
-
-    def add(self, value):
-        if value not in self._valid_flags:
-            raise ValueError("Unexpected flag: {}".format(value))
-        return self._flags.add(value)
 
 
 class Padding(object):

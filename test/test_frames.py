@@ -45,24 +45,6 @@ class TestGeneralFrameBehaviour(object):
         assert repr(f) == "Frame(Stream: 0; Flags: None): {}...".format("A"*100)
 
 
-class TestFlags(object):
-    def test_general_behaviour(self):
-        f = DataFrame(1)
-        assert not f.flags
-
-        f.flags.add("END_STREAM")
-        assert "END_STREAM" in f.flags
-        assert list(f.flags) == ["END_STREAM"]
-        assert len(f.flags) == 1
-
-        f.flags.discard("END_STREAM")
-        assert "END_STREAM" not in f.flags
-        f.flags.discard("END_STREAM")
-
-        with pytest.raises(ValueError):
-            f.flags.add("END_HEADERS")
-
-
 class TestDataFrame(object):
     payload = b'\x00\x00\x08\x00\x01\x00\x00\x00\x01testdata'
     payload_with_padding = b'\x00\x00\x13\x00\x09\x00\x00\x00\x01\x0Atestdata' + b'\0' * 10
