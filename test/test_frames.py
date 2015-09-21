@@ -1,6 +1,6 @@
 # -*- coding: utf-8 -*-
 from hyperframe.frame import (
-    Frame, DataFrame, PriorityFrame, RstStreamFrame, SettingsFrame,
+    Frame, Flags, DataFrame, PriorityFrame, RstStreamFrame, SettingsFrame,
     PushPromiseFrame, PingFrame, GoAwayFrame, WindowUpdateFrame, HeadersFrame,
     ContinuationFrame, AltSvcFrame, Origin, BlockedFrame,
 )
@@ -19,7 +19,7 @@ class TestGeneralFrameBehaviour(object):
         f = Frame(stream_id=0)
         flags = f.parse_flags(0xFF)
         assert not flags
-        assert isinstance(flags, set)
+        assert isinstance(flags, Flags)
 
     def test_base_frame_cant_serialize(self):
         f = Frame(stream_id=0)
@@ -43,6 +43,7 @@ class TestGeneralFrameBehaviour(object):
 
         monkeypatch.setattr(Frame, "serialize_body", lambda _: "A"*105)
         assert repr(f) == "Frame(Stream: 0; Flags: None): {}...".format("A"*100)
+
 
 class TestDataFrame(object):
     payload = b'\x00\x00\x08\x00\x01\x00\x00\x00\x01testdata'
@@ -142,7 +143,7 @@ class TestPriorityFrame(object):
         f = PriorityFrame(1)
         flags = f.parse_flags(0xFF)
         assert flags == set()
-        assert isinstance(flags, set)
+        assert isinstance(flags, Flags)
 
     def test_priority_frame_with_all_data_serializes_properly(self):
         f = PriorityFrame(1)
@@ -171,7 +172,7 @@ class TestRstStreamFrame(object):
         f = RstStreamFrame(1)
         flags = f.parse_flags(0xFF)
         assert not flags
-        assert isinstance(flags, set)
+        assert isinstance(flags, Flags)
 
     def test_rst_stream_frame_serializes_properly(self):
         f = RstStreamFrame(1)
@@ -341,7 +342,7 @@ class TestGoAwayFrame(object):
         flags = f.parse_flags(0xFF)
 
         assert not flags
-        assert isinstance(flags, set)
+        assert isinstance(flags, Flags)
 
     def test_goaway_serializes_properly(self):
         f = GoAwayFrame()
@@ -381,7 +382,7 @@ class TestWindowUpdateFrame(object):
         flags = f.parse_flags(0xFF)
 
         assert not flags
-        assert isinstance(flags, set)
+        assert isinstance(flags, Flags)
 
     def test_window_update_serializes_properly(self):
         f = WindowUpdateFrame(0)
@@ -565,7 +566,7 @@ class TestBlockedFrame(object):
         flags = f.parse_flags(0xFF)
 
         assert not flags
-        assert isinstance(flags, set)
+        assert isinstance(flags, Flags)
 
     def test_blocked_serializes_properly(self):
         f = BlockedFrame(2)

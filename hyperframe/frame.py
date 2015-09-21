@@ -10,11 +10,14 @@ socket.
 import collections
 import struct
 
+from .flags import Flag, Flags
+
 # The maximum initial length of a frame. Some frames have shorter maximum lengths.
 FRAME_MAX_LEN = (2 ** 14)
 
 # The maximum allowed length of a frame.
 FRAME_MAX_ALLOWED_LEN = (2 ** 24) - 1
+
 
 class Frame(object):
     """
@@ -32,7 +35,7 @@ class Frame(object):
 
     def __init__(self, stream_id, flags=()):
         self.stream_id = stream_id
-        self.flags = set()
+        self.flags = Flags(self.defined_flags)
         self.body_len = 0
 
         for flag in flags:
@@ -176,8 +179,8 @@ class DataFrame(Padding, Frame):
     to carry HTTP request or response payloads.
     """
     defined_flags = [
-        ('END_STREAM', 0x01),
-        ('PADDED', 0x08),
+        Flag('END_STREAM', 0x01),
+        Flag('PADDED', 0x08),
     ]
 
     type = 0x0
@@ -269,7 +272,7 @@ class SettingsFrame(Frame):
     might set a high initial flow control window, whereas a server might set a
     lower value to conserve resources.
     """
-    defined_flags = [('ACK', 0x01)]
+    defined_flags = [Flag('ACK', 0x01)]
 
     type = 0x04
 
@@ -309,7 +312,10 @@ class PushPromiseFrame(Padding, Frame):
     The PUSH_PROMISE frame is used to notify the peer endpoint in advance of
     streams the sender intends to initiate.
     """
-    defined_flags = [('END_HEADERS', 0x04), ('PADDED', 0x08),]
+    defined_flags = [
+        Flag('END_HEADERS', 0x04),
+        Flag('PADDED', 0x08)
+    ]
 
     type = 0x05
 
@@ -339,7 +345,7 @@ class PingFrame(Frame):
     the sender, as well as determining whether an idle connection is still
     functional. PING frames can be sent from any endpoint.
     """
-    defined_flags = [('ACK', 0x01)]
+    defined_flags = [Flag('ACK', 0x01)]
 
     type = 0x06
 
@@ -446,10 +452,10 @@ class HeadersFrame(Padding, Priority, Frame):
     stream_association = 'has-stream'
 
     defined_flags = [
-        ('END_STREAM', 0x01),
-        ('END_HEADERS', 0x04),
-        ('PADDED', 0x08),
-        ('PRIORITY', 0x20),
+        Flag('END_STREAM', 0x01),
+        Flag('END_HEADERS', 0x04),
+        Flag('PADDED', 0x08),
+        Flag('PRIORITY', 0x20),
     ]
 
     def __init__(self, stream_id, data=b'', **kwargs):
@@ -494,7 +500,7 @@ class ContinuationFrame(Frame):
 
     stream_association = 'has-stream'
 
-    defined_flags = [('END_HEADERS', 0x04),]
+    defined_flags = [Flag('END_HEADERS', 0x04),]
 
     def __init__(self, stream_id, data=b'', **kwargs):
         super(ContinuationFrame, self).__init__(stream_id, **kwargs)
