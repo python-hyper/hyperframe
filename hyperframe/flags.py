@@ -6,16 +6,12 @@ hyperframe/flags
 Defines basic Flag and Flags data structures.
 """
 import collections
-try:
-    from collections.abc import MutableSet
-except ImportError:  # pragma: nocover
-    from collections import MutableSet
 
 
 Flag = collections.namedtuple("Flag", ["name", "bit"])
 
 
-class Flags(MutableSet):
+class Flags(collections.MutableSet):
     """
     A simple MutableSet implementation that will only accept known flags as elements.
 
