@@ -200,6 +200,7 @@ class DataFrame(Padding, Frame):
     def parse_body(self, data):
         padding_data_length = self.parse_padding_data(data)
         self.data = data[padding_data_length:len(data)-self.total_padding].tobytes()
+        self.body_len = len(data)
 
     @property
     def flow_controlled_length(self):
@@ -228,6 +229,7 @@ class PriorityFrame(Priority, Frame):
 
     def parse_body(self, data):
         self.parse_priority_data(data)
+        self.body_len = len(data)
 
 
 class RstStreamFrame(Frame):
@@ -258,6 +260,7 @@ class RstStreamFrame(Frame):
             raise ValueError()
 
         self.error_code = struct.unpack("!L", data)[0]
+        self.body_len = len(data)
 
 
 class SettingsFrame(Frame):
@@ -306,6 +309,8 @@ class SettingsFrame(Frame):
             name, value = struct.unpack("!HL", data[i:i+6])
             self.settings[name] = value
 
+        self.body_len = len(data)
+
 
 class PushPromiseFrame(Padding, Frame):
     """
@@ -337,6 +342,7 @@ class PushPromiseFrame(Padding, Frame):
         padding_data_length = self.parse_padding_data(data)
         self.promised_stream_id = struct.unpack("!L", data[padding_data_length:padding_data_length + 4])[0]
         self.data = data[padding_data_length + 4:].tobytes()
+        self.body_len = len(data)
 
 
 class PingFrame(Frame):
@@ -369,6 +375,7 @@ class PingFrame(Frame):
             raise ValueError()
 
         self.opaque_data = data.tobytes()
+        self.body_len = len(data)
 
 
 class GoAwayFrame(Frame):
@@ -401,6 +408,7 @@ class GoAwayFrame(Frame):
 
     def parse_body(self, data):
         self.last_stream_id, self.error_code = struct.unpack("!LL", data[:8])
+        self.body_len = len(data)
 
         if len(data) > 8:
             self.additional_data = data[8:].tobytes()
@@ -433,6 +441,7 @@ class WindowUpdateFrame(Frame):
 
     def parse_body(self, data):
         self.window_increment = struct.unpack("!L", data)[0]
+        self.body_len = len(data)
 
 
 class HeadersFrame(Padding, Priority, Frame):
@@ -483,6 +492,7 @@ class HeadersFrame(Padding, Priority, Frame):
         else:
             priority_data_length = 0
 
+        self.body_len = len(data)
         self.data = data[priority_data_length:len(data)-self.total_padding].tobytes()
 
 
@@ -512,6 +522,7 @@ class ContinuationFrame(Frame):
 
     def parse_body(self, data):
         self.data = data.tobytes()
+        self.body_len = len(data)
 
 
 Origin = collections.namedtuple('Origin', ['scheme', 'host', 'port'])
@@ -559,6 +570,7 @@ class AltSvcFrame(Frame):
                          self.serialize_origin()])
 
     def parse_body(self, data):
+        self.body_len = len(data)
         self.max_age, self.port, protocol_id_length = struct.unpack("!LHxB", data[:8])
         pos = 8
         self.protocol_id = data[pos:pos+protocol_id_length].tobytes()

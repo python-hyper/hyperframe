@@ -80,6 +80,7 @@ class TestDataFrame(object):
         assert f.flags == set(['END_STREAM'])
         assert f.pad_length == 0
         assert f.data == b'testdata'
+        assert f.body_len == 8
 
     def test_data_frame_with_padding_parses_properly(self):
         f = decode_frame(self.payload_with_padding)
@@ -88,6 +89,7 @@ class TestDataFrame(object):
         assert f.flags == set(['END_STREAM', 'PADDED'])
         assert f.pad_length == 10
         assert f.data == b'testdata'
+        assert f.body_len == 19
 
     def test_data_frame_with_padding_calculates_flow_control_len(self):
         f = DataFrame(1)
@@ -161,6 +163,7 @@ class TestPriorityFrame(object):
         assert f.depends_on == 4
         assert f.stream_weight == 64
         assert f.exclusive == True
+        assert f.body_len == 5
 
     def test_priority_frame_comes_on_a_stream(self):
         with pytest.raises(ValueError):
@@ -188,6 +191,7 @@ class TestRstStreamFrame(object):
         assert isinstance(f, RstStreamFrame)
         assert f.flags == set()
         assert f.error_code == 420
+        assert f.body_len == 4
 
     def test_rst_stream_frame_comes_on_a_stream(self):
         with pytest.raises(ValueError):
@@ -254,6 +258,7 @@ class TestSettingsFrame(object):
         assert isinstance(f, SettingsFrame)
         assert f.flags == set(['ACK'])
         assert f.settings == self.settings
+        assert f.body_len == 36
 
     def test_settings_frames_never_have_streams(self):
         with pytest.raises(ValueError):
@@ -292,6 +297,7 @@ class TestPushPromiseFrame(object):
         assert f.flags == set(['END_HEADERS'])
         assert f.promised_stream_id == 4
         assert f.data == b'hello world'
+        assert f.body_len == 15
 
 
 class TestPingFrame(object):
@@ -325,6 +331,7 @@ class TestPingFrame(object):
         assert isinstance(f, PingFrame)
         assert f.flags == set(['ACK'])
         assert f.opaque_data == b'\x01\x02\x00\x00\x00\x00\x00\x00'
+        assert f.body_len == 8
 
     def test_ping_frame_never_has_a_stream(self):
         with pytest.raises(ValueError):
@@ -370,6 +377,7 @@ class TestGoAwayFrame(object):
         assert isinstance(f, GoAwayFrame)
         assert f.flags == set()
         assert f.additional_data == b'hello'
+        assert f.body_len == 13
 
     def test_goaway_frame_never_has_a_stream(self):
         with pytest.raises(ValueError):
@@ -398,6 +406,7 @@ class TestWindowUpdateFrame(object):
         assert isinstance(f, WindowUpdateFrame)
         assert f.flags == set()
         assert f.window_increment == 512
+        assert f.body_len == 4
 
 
 class TestHeadersFrame(object):
@@ -429,6 +438,7 @@ class TestHeadersFrame(object):
         assert isinstance(f, HeadersFrame)
         assert f.flags == set(['END_STREAM', 'END_HEADERS'])
         assert f.data == b'hello world'
+        assert f.body_len == 11
 
     def test_headers_frame_with_priority_parses_properly(self):
         # This test also tests that we can receive a HEADERS frame with no
@@ -445,6 +455,7 @@ class TestHeadersFrame(object):
         assert f.depends_on == 4
         assert f.stream_weight == 64
         assert f.exclusive == True
+        assert f.body_len == 5
 
     def test_headers_frame_with_priority_serializes_properly(self):
         # This test also tests that we can receive a HEADERS frame with no
@@ -488,6 +499,7 @@ class TestContinuationFrame(object):
         assert isinstance(f, ContinuationFrame)
         assert f.flags == set(['END_HEADERS'])
         assert f.data == b'hello world'
+        assert f.body_len == 11
 
 
 class TestAltSvcFrame(object):
@@ -528,6 +540,7 @@ class TestAltSvcFrame(object):
         assert f.protocol_id == b'h2'
         assert f.max_age == 29
         assert f.origin == Origin(scheme=b'https', host=b'yahoo.com', port=8080)
+        assert f.body_len == 43
 
     def test_altsvc_frame_without_origin_serializes_properly(self):
         f = AltSvcFrame()
@@ -548,6 +561,7 @@ class TestAltSvcFrame(object):
         assert f.protocol_id == b'h2'
         assert f.max_age == 29
         assert f.origin is None
+        assert f.body_len == 21
 
     def test_altsvc_frame_serialize_origin_without_port(self):
         f = AltSvcFrame()
@@ -580,3 +594,4 @@ class TestBlockedFrame(object):
 
         assert isinstance(f, BlockedFrame)
         assert f.flags == set()
+        assert f.body_len == 0
