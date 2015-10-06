@@ -1,6 +1,14 @@
 Release History
 ===============
 
+2.1.0 (2015-10-06)
+------------------
+
+**API Changes**
+
+- Frames parsed from binary data now carry a ``body_len`` attribute that
+  matches the frame length (minus the frame header).
+
 2.0.0 (2015-09-21)
 ------------------
 
