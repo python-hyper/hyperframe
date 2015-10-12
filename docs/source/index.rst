@@ -1,22 +1,34 @@
-.. hyperframe documentation master file, created by
-   sphinx-quickstart on Mon Oct 12 14:06:36 2015.
-   You can adapt this file completely to your liking, but it should at least
-   contain the root `toctree` directive.
+hyperframe: HTTP/2 Framing for Python
+=====================================
 
-Welcome to hyperframe's documentation!
-======================================
+hyperframe is a pure-Python tool for working with HTTP/2 frames. This library
+allows you to create, serialize, and parse HTTP/2 frames.
+
+Working with it is easy:
+
+.. code-block:: python
+
+    import hyperframe
+
+    f = hyperframe.frame.DataFrame(stream_id=5)
+    f.data = b'some binary data'
+    f.flags.add('END_STREAM')
+    f.flags.add('PADDED')
+    f.padding_length = 30
+
+    data = f.serialize()
+
+    new_frame = hyperframe.frame.Frame.parse_frame_header(data[:9])
+    new_frame.parse_body(data[9:])
+
+hyperframe is pure-Python, contains no external dependencies, and runs on a
+wide variety of Python interpreters and platforms. Made available under the MIT
+license, why write your own frame parser?
 
 Contents:
 
 .. toctree::
    :maxdepth: 2
 
-
-
-Indices and tables
-==================
-
-* :ref:`genindex`
-* :ref:`modindex`
-* :ref:`search`
-
+   installation
+   api

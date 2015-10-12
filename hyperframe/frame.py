@@ -23,10 +23,10 @@ class Frame(object):
     """
     The base class for all HTTP/2 frames.
     """
-    # The flags defined on this type of frame.
+    #: The flags defined on this type of frame.
     defined_flags = []
 
-    # The type of the frame.
+    #: The byte used to define the type of the frame.
     type = None
 
     # If 'has-stream', the frame's stream_id must be non-zero. If 'no-stream',
@@ -34,8 +34,14 @@ class Frame(object):
     stream_association = None
 
     def __init__(self, stream_id, flags=()):
+        #: The stream identifier for the stream this frame was received on.
+        #: Set to 0 for frames sent on the connection (stream-id 0).
         self.stream_id = stream_id
+
+        #: The flags set for this frame.
         self.flags = Flags(self.defined_flags)
+
+        #: The frame length, excluding the nine-byte header.
         self.body_len = 0
 
         for flag in flags:
@@ -60,6 +66,8 @@ class Frame(object):
         """
         Takes a 9-byte frame header and returns a tuple of the appropriate
         Frame object and the length that needs to be read from the socket.
+
+        This populates the flags field, and determines how long the body is.
         """
         fields = struct.unpack("!HBBBL", header)
         # First 24 bits are frame length.
@@ -83,6 +91,10 @@ class Frame(object):
         return self.flags
 
     def serialize(self):
+        """
+        Convert a frame into a bytestring, representing the serialized form of
+        the frame.
+        """
         body = self.serialize_body()
         self.body_len = len(body)
 
@@ -109,16 +121,28 @@ class Frame(object):
         raise NotImplementedError()
 
     def parse_body(self, data):
+        """
+        Given the body of a frame, parses it into frame data. This populates
+        the non-header parts of the frame: that is, it does not populate the
+        stream ID or flags.
+
+        :param data: A bytestring containing the body data of the frame. Must
+                     not contain *more* data than the length returned by
+                     :meth:`parse_frame_header
+                     <hyperframe.frame.Frame.parse_frame_header>`.
+        """
         raise NotImplementedError()
 
 
 class Padding(object):
     """
-    Mixin for frames that contain padding.
+    Mixin for frames that contain padding. Defines extra fields that can be
+    used and set by frames that can be padded.
     """
     def __init__(self, stream_id, pad_length=0, **kwargs):
         super(Padding, self).__init__(stream_id, **kwargs)
 
+        #: The length of the padding to use.
         self.pad_length = pad_length
 
     def serialize_padding_data(self):
@@ -134,24 +158,24 @@ class Padding(object):
 
     @property
     def total_padding(self):
-        """Return the total length of the padding, if any."""
         return self.pad_length
 
 
 class Priority(object):
     """
-    Mixin for frames that contain priority data.
+    Mixin for frames that contain priority data. Defines extra fields that can
+    be used and set by frames that contain priority data.
     """
     def __init__(self, stream_id, depends_on=None, stream_weight=None, exclusive=None, **kwargs):
         super(Priority, self).__init__(stream_id, **kwargs)
 
-        # The stream ID of the stream on which this stream depends.
+        #: The stream ID of the stream on which this stream depends.
         self.depends_on = depends_on
 
-        # The weight of the stream. This is an integer between 0 and 256.
+        #: The weight of the stream. This is an integer between 0 and 256.
         self.stream_weight = stream_weight
 
-        # Whether the exclusive bit was set.
+        #: Whether the exclusive bit was set.
         self.exclusive = exclusive
 
     def serialize_priority_data(self):
@@ -177,11 +201,13 @@ class DataFrame(Padding, Frame):
     associated with a stream. One or more DATA frames are used, for instance,
     to carry HTTP request or response payloads.
     """
+    #: The flags defined for DATA frames.
     defined_flags = [
         Flag('END_STREAM', 0x01),
         Flag('PADDED', 0x08),
     ]
 
+    #: The type byte for data frames.
     type = 0x0
 
     stream_association = 'has-stream'
@@ -189,6 +215,7 @@ class DataFrame(Padding, Frame):
     def __init__(self, stream_id, data=b'', **kwargs):
         super(DataFrame, self).__init__(stream_id, **kwargs)
 
+        #: The data contained on this frame.
         self.data = data
 
     def serialize_body(self):
@@ -204,8 +231,8 @@ class DataFrame(Padding, Frame):
     @property
     def flow_controlled_length(self):
         """
-        If the frame is padded we need to include the padding length byte in
-        the flow control used.
+        The length of the frame that needs to be accounted for when considering
+        flow control.
         """
         padding_len = self.total_padding + 1 if self.total_padding else 0
         return len(self.data) + padding_len
@@ -217,8 +244,10 @@ class PriorityFrame(Priority, Frame):
     can be sent at any time for an existing stream. This enables
     reprioritisation of existing streams.
     """
+    #: The flags defined for PRIORITY frames.
     defined_flags = []
 
+    #: The type byte defined for PRIORITY frames.
     type = 0x02
 
     stream_association = 'has-stream'
@@ -240,8 +269,10 @@ class RstStreamFrame(Frame):
     requesting that the stream be cancelled or that an error condition has
     occurred.
     """
+    #: The flags defined for RST_STREAM frames.
     defined_flags = []
 
+    #: The type byte defined for RST_STREAM frames.
     type = 0x03
 
     stream_association = 'has-stream'
@@ -249,6 +280,7 @@ class RstStreamFrame(Frame):
     def __init__(self, stream_id, error_code=0, **kwargs):
         super(RstStreamFrame, self).__init__(stream_id, **kwargs)
 
+        #: The error code used when resetting the stream.
         self.error_code = error_code
 
     def serialize_body(self):
@@ -274,19 +306,27 @@ class SettingsFrame(Frame):
     might set a high initial flow control window, whereas a server might set a
     lower value to conserve resources.
     """
+    #: The flags defined for SETTINGS frames.
     defined_flags = [Flag('ACK', 0x01)]
 
+    #: The type byte defined for SETTINGS frames.
     type = 0x04
 
     stream_association = 'no-stream'
 
     # We need to define the known settings, they may as well be class
     # attributes.
+    #: The byte that signals the SETTINGS_HEADER_TABLE_SIZE setting.
     HEADER_TABLE_SIZE             = 0x01
+    #: The byte that signals the SETTINGS_ENABLE_PUSH setting.
     ENABLE_PUSH                   = 0x02
+    #: The byte that signals the SETTINGS_MAX_CONCURRENT_STREAMS setting.
     MAX_CONCURRENT_STREAMS        = 0x03
+    #: The byte that signals the SETTINGS_INITIAL_WINDOW_SIZE setting.
     INITIAL_WINDOW_SIZE           = 0x04
+    #: The byte that signals the SETTINGS_MAX_FRAME_SIZE setting.
     SETTINGS_MAX_FRAME_SIZE       = 0x05
+    #: The byte that signals the SETTINGS_MAX_HEADER_LIST_SIZE setting.
     SETTINGS_MAX_HEADER_LIST_SIZE = 0x06
 
     def __init__(self, stream_id=0, settings=None, **kwargs):
@@ -295,7 +335,7 @@ class SettingsFrame(Frame):
         if settings and "ACK" in kwargs.get("flags", ()):
             raise ValueError("Settings must be empty if ACK flag is set.")
 
-        # A dictionary of the setting type byte to the value.
+        #: A dictionary of the setting type byte to the value of the setting.
         self.settings = settings or {}
 
     def serialize_body(self):
@@ -316,11 +356,13 @@ class PushPromiseFrame(Padding, Frame):
     The PUSH_PROMISE frame is used to notify the peer endpoint in advance of
     streams the sender intends to initiate.
     """
+    #: The flags defined for PUSH_PROMISE frames.
     defined_flags = [
         Flag('END_HEADERS', 0x04),
         Flag('PADDED', 0x08)
     ]
 
+    #: The type byte defined for PUSH_PROMISE frames.
     type = 0x05
 
     stream_association = 'has-stream'
@@ -328,7 +370,11 @@ class PushPromiseFrame(Padding, Frame):
     def __init__(self, stream_id, promised_stream_id=0, data=b'', **kwargs):
         super(PushPromiseFrame, self).__init__(stream_id, **kwargs)
 
+        #: The stream ID that is promised by this frame.
         self.promised_stream_id = promised_stream_id
+
+        #: The HPACK-encoded header block for the simulated request on the new
+        #: stream.
         self.data = data
 
     def serialize_body(self):
@@ -350,8 +396,10 @@ class PingFrame(Frame):
     the sender, as well as determining whether an idle connection is still
     functional. PING frames can be sent from any endpoint.
     """
+    #: The flags defined for PING frames.
     defined_flags = [Flag('ACK', 0x01)]
 
+    #: The type byte defined for PING frames.
     type = 0x06
 
     stream_association = 'no-stream'
@@ -359,6 +407,7 @@ class PingFrame(Frame):
     def __init__(self, stream_id=0, opaque_data=b'', **kwargs):
         super(PingFrame, self).__init__(stream_id, **kwargs)
 
+        #: The opaque data sent in this PING frame, as a bytestring.
         self.opaque_data = opaque_data
 
     def serialize_body(self):
@@ -384,6 +433,10 @@ class GoAwayFrame(Frame):
     sender will ignore frames sent on new streams for the remainder of the
     connection.
     """
+    #: The flags defined for GOAWAY frames.
+    defined_flags = []
+
+    #: The type byte defined for GOAWAY frames.
     type = 0x07
 
     stream_association = 'no-stream'
@@ -391,8 +444,13 @@ class GoAwayFrame(Frame):
     def __init__(self, stream_id=0, last_stream_id=0, error_code=0, additional_data=b'', **kwargs):
         super(GoAwayFrame, self).__init__(stream_id, **kwargs)
 
+        #: The last stream ID definitely seen by the remote peer.
         self.last_stream_id = last_stream_id
+
+        #: The error code for connection teardown.
         self.error_code = error_code
+
+        #: Any additional data sent in the GOAWAY.
         self.additional_data = additional_data
 
     def serialize_body(self):
@@ -426,6 +484,10 @@ class WindowUpdateFrame(Frame):
     can indirectly cause the propagation of flow control information toward the
     original sender.
     """
+    #: The flags defined for WINDOW_UPDATE frames.
+    defined_flags = []
+
+    #: The type byte defined for WINDOW_UPDATE frames.
     type = 0x08
 
     stream_association = 'either'
@@ -433,6 +495,7 @@ class WindowUpdateFrame(Frame):
     def __init__(self, stream_id, window_increment=0, **kwargs):
         super(WindowUpdateFrame, self).__init__(stream_id, **kwargs)
 
+        #: The amount the flow control window is to be incremented.
         self.window_increment = window_increment
 
     def serialize_body(self):
@@ -455,10 +518,7 @@ class HeadersFrame(Padding, Priority, Frame):
     to be followed with CONTINUATION frames. From the perspective of the frame
     building code the header block is an opaque data segment.
     """
-    type = 0x01
-
-    stream_association = 'has-stream'
-
+    #: The flags defined for HEADERS frames.
     defined_flags = [
         Flag('END_STREAM', 0x01),
         Flag('END_HEADERS', 0x04),
@@ -466,9 +526,15 @@ class HeadersFrame(Padding, Priority, Frame):
         Flag('PRIORITY', 0x20),
     ]
 
+    #: The type byte defined for HEADERS frames.
+    type = 0x01
+
+    stream_association = 'has-stream'
+
     def __init__(self, stream_id, data=b'', **kwargs):
         super(HeadersFrame, self).__init__(stream_id, **kwargs)
 
+        #: The HPACK-encoded header block.
         self.data = data
 
     def serialize_body(self):
@@ -505,15 +571,18 @@ class ContinuationFrame(Frame):
     Much like the HEADERS frame, hyper treats this as an opaque data frame with
     different flags and a different type.
     """
+    #: The flags defined for CONTINUATION frames.
+    defined_flags = [Flag('END_HEADERS', 0x04),]
+
+    #: The type byte defined for CONTINUATION frames.
     type = 0x09
 
     stream_association = 'has-stream'
 
-    defined_flags = [Flag('END_HEADERS', 0x04),]
-
     def __init__(self, stream_id, data=b'', **kwargs):
         super(ContinuationFrame, self).__init__(stream_id, **kwargs)
 
+        #: The HPACK-encoded header block.
         self.data = data
 
     def serialize_body(self):
@@ -606,7 +675,6 @@ class BlockedFrame(Frame):
         pass
 
 
-# A map of type byte to frame class.
 _FRAME_CLASSES = [
     DataFrame,
     HeadersFrame,
@@ -621,4 +689,6 @@ _FRAME_CLASSES = [
     AltSvcFrame,
     BlockedFrame
 ]
+#: FRAMES maps the type byte for each frame to the class used to represent that
+#: frame.
 FRAMES = {cls.type: cls for cls in _FRAME_CLASSES}
