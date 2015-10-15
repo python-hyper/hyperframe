@@ -10,6 +10,7 @@ socket.
 import collections
 import struct
 
+from .exceptions import UnknownFrameError
 from .flags import Flag, Flags
 
 # The maximum initial length of a frame. Some frames have shorter maximum lengths.
@@ -68,6 +69,9 @@ class Frame(object):
         Frame object and the length that needs to be read from the socket.
 
         This populates the flags field, and determines how long the body is.
+
+        :raises hyperframe.exceptions.UnknownFrameError: If a frame of unknown
+            type is received.
         """
         fields = struct.unpack("!HBBBL", header)
         # First 24 bits are frame length.
@@ -77,7 +81,7 @@ class Frame(object):
         stream_id = fields[4]
 
         if type not in FRAMES:
-            raise ValueError("Unknown frame type %d" % type)
+            raise UnknownFrameError(type, length)
 
         frame = FRAMES[type](stream_id)
         frame.parse_flags(flags)

@@ -1,6 +1,15 @@
 Release History
 ===============
 
+dev
+---
+
+**API Changes**
+
+- When an unknown frame is encountered, ``parse_frame_header`` now throws a
+  ``ValueError`` subclass: ``UnknownFrameError``. This subclass contains the
+  frame type and the length of the frame body.
+
 2.1.0 (2015-10-06)
 ------------------
 
