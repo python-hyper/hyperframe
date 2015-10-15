@@ -64,3 +64,9 @@ you need is not present!
    :members:
 
 .. autodata:: hyperframe.frame.FRAMES
+
+Exceptions
+----------
+
+.. autoclass:: hyperframe.exceptions.UnknownFrameError
+   :members:
