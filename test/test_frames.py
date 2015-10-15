@@ -4,6 +4,7 @@ from hyperframe.frame import (
     PushPromiseFrame, PingFrame, GoAwayFrame, WindowUpdateFrame, HeadersFrame,
     ContinuationFrame, AltSvcFrame, Origin, BlockedFrame,
 )
+from hyperframe.exceptions import UnknownFrameError
 import pytest
 
 
@@ -33,8 +34,16 @@ class TestGeneralFrameBehaviour(object):
             f.parse_body(data)
 
     def test_parse_frame_header_unknown_type(self):
-        with pytest.raises(ValueError):
-            Frame.parse_frame_header(b'\x00\x00\x00\xFF\x00\x00\x00\x00\x01')
+        with pytest.raises(UnknownFrameError) as excinfo:
+            Frame.parse_frame_header(b'\x00\x00\x59\xFF\x00\x00\x00\x00\x01')
+
+        exception = excinfo.value
+        assert exception.frame_type == 0xFF
+        assert exception.length == 0x59
+        assert str(exception) == (
+            "UnknownFrameError: Unknown frame type 0xFF received, "
+            "length 89 bytes"
+        )
 
     def test_repr(self, monkeypatch):
         f = Frame(stream_id=0)
