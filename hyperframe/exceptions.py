@@ -23,3 +23,10 @@ class UnknownFrameError(ValueError):
             "UnknownFrameError: Unknown frame type 0x%X received, "
             "length %d bytes" % (self.frame_type, self.length)
         )
+
+
+class InvalidPaddingError(ValueError):
+    """
+    A frame with invalid padding was received.
+    """
+    pass

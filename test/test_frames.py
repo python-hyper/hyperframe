@@ -4,7 +4,7 @@ from hyperframe.frame import (
     PushPromiseFrame, PingFrame, GoAwayFrame, WindowUpdateFrame, HeadersFrame,
     ContinuationFrame, AltSvcFrame, Origin, BlockedFrame,
 )
-from hyperframe.exceptions import UnknownFrameError
+from hyperframe.exceptions import UnknownFrameError, InvalidPaddingError
 import pytest
 
 
@@ -145,6 +145,14 @@ class TestDataFrame(object):
 
         data = f.serialize()
         assert f.body_len == 300
+
+    def test_data_frame_with_invalid_padding_fails_to_parse(self):
+        # This frame has a padding length of 6 bytes, but a total length of
+        # only 5.
+        data = b'\x00\x00\x05\x00\x0b\x00\x00\x00\x01\x06\x54\x65\x73\x74'
+
+        with pytest.raises(InvalidPaddingError):
+            decode_frame(data)
 
 
 class TestPriorityFrame(object):
@@ -307,6 +315,14 @@ class TestPushPromiseFrame(object):
         assert f.promised_stream_id == 4
         assert f.data == b'hello world'
         assert f.body_len == 15
+
+    def test_push_promise_frame_with_invalid_padding_fails_to_parse(self):
+        # This frame has a padding length of 6 bytes, but a total length of
+        # only 5.
+        data = b'\x00\x00\x05\x05\x08\x00\x00\x00\x01\x06\x54\x65\x73\x74'
+
+        with pytest.raises(InvalidPaddingError):
+            decode_frame(data)
 
 
 class TestPingFrame(object):
@@ -481,6 +497,14 @@ class TestHeadersFrame(object):
         f.exclusive = True
 
         assert f.serialize() == s
+
+    def test_headers_frame_with_invalid_padding_fails_to_parse(self):
+        # This frame has a padding length of 6 bytes, but a total length of
+        # only 5.
+        data = b'\x00\x00\x05\x01\x08\x00\x00\x00\x01\x06\x54\x65\x73\x74'
+
+        with pytest.raises(InvalidPaddingError):
+            decode_frame(data)
 
 
 class TestContinuationFrame(object):
