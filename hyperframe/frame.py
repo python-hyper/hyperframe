@@ -10,7 +10,7 @@ socket.
 import collections
 import struct
 
-from .exceptions import UnknownFrameError
+from .exceptions import UnknownFrameError, InvalidPaddingError
 from .flags import Flag, Flags
 
 # The maximum initial length of a frame. Some frames have shorter maximum lengths.
@@ -232,6 +232,9 @@ class DataFrame(Padding, Frame):
         self.data = data[padding_data_length:len(data)-self.total_padding].tobytes()
         self.body_len = len(data)
 
+        if self.total_padding >= self.body_len:
+            raise InvalidPaddingError("Padding is too long.")
+
     @property
     def flow_controlled_length(self):
         """
@@ -392,6 +395,9 @@ class PushPromiseFrame(Padding, Frame):
         self.promised_stream_id = struct.unpack("!L", data[padding_data_length:padding_data_length + 4])[0]
         self.data = data[padding_data_length + 4:].tobytes()
         self.body_len = len(data)
+
+        if self.total_padding >= self.body_len:
+            raise InvalidPaddingError("Padding is too long.")
 
 
 class PingFrame(Frame):
@@ -563,6 +569,9 @@ class HeadersFrame(Padding, Priority, Frame):
 
         self.body_len = len(data)
         self.data = data[priority_data_length:len(data)-self.total_padding].tobytes()
+
+        if self.total_padding >= self.body_len:
+            raise InvalidPaddingError("Padding is too long.")
 
 
 class ContinuationFrame(Frame):
