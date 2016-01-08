@@ -35,3 +35,5 @@ Authors
 
 hyperframe is maintained by Cory Benfield, with contributions from others. For
 more details about the contributors, please see ``CONTRIBUTORS.rst``.
+
+.. _hyper: http://python-hyper.org/
