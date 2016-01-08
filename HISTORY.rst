@@ -1,6 +1,14 @@
 Release History
 ===============
 
+3.0.0 (2016-01-08)
+------------------
+
+**Backwards Incompatible API Changes**
+
+- Parsing padded frames that have invalid padding sizes now throws an
+  ``InvalidPaddingError``.
+
 2.2.0 (2015-10-15)
 ------------------
 

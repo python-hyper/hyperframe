@@ -5,4 +5,4 @@ hyperframe
 
 A module for providing a pure-Python HTTP/2 framing layer.
 """
-__version__ = '2.2.0'
+__version__ = '3.0.0'
