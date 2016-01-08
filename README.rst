@@ -2,8 +2,8 @@
 hyperframe: Pure-Python HTTP/2 framing
 ======================================
 
-.. image:: https://travis-ci.org/Lukasa/hyperframe.png?branch=master
-    :target: https://travis-ci.org/Lukasa/hyperframe
+.. image:: https://travis-ci.org/python-hyper/hyperframe.png?branch=master
+    :target: https://travis-ci.org/python-hyper/hyperframe
 
 This library contains the HTTP/2 framing code used in the `hyper`_ project. It
 provides a pure-Python codebase that is capable of decoding a binary stream
