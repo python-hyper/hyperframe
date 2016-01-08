@@ -154,6 +154,15 @@ class TestDataFrame(object):
         with pytest.raises(InvalidPaddingError):
             decode_frame(data)
 
+    def test_data_frame_with_no_length_parses(self):
+        # Fixes issue with empty data frames raising InvalidPaddingError.
+        f = DataFrame(1)
+        f.data = b''
+        data = f.serialize()
+
+        new_frame = decode_frame(data)
+        assert new_frame.data == b''
+
 
 class TestPriorityFrame(object):
     payload = b'\x00\x00\x05\x02\x00\x00\x00\x00\x01\x80\x00\x00\x04\x40'
@@ -323,6 +332,15 @@ class TestPushPromiseFrame(object):
 
         with pytest.raises(InvalidPaddingError):
             decode_frame(data)
+
+    def test_push_promise_frame_with_no_length_parses(self):
+        # Fixes issue with empty data frames raising InvalidPaddingError.
+        f = PushPromiseFrame(1)
+        f.data = b''
+        data = f.serialize()
+
+        new_frame = decode_frame(data)
+        assert new_frame.data == b''
 
 
 class TestPingFrame(object):
@@ -505,6 +523,15 @@ class TestHeadersFrame(object):
 
         with pytest.raises(InvalidPaddingError):
             decode_frame(data)
+
+    def test_headers_frame_with_no_length_parses(self):
+        # Fixes issue with empty data frames raising InvalidPaddingError.
+        f = HeadersFrame(1)
+        f.data = b''
+        data = f.serialize()
+
+        new_frame = decode_frame(data)
+        assert new_frame.data == b''
 
 
 class TestContinuationFrame(object):
