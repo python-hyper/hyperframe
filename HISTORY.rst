@@ -1,6 +1,14 @@
 Release History
 ===============
 
+3.0.1 (2016-01-08)
+------------------
+
+**Bugfixes**
+
+- Fix issue where unpadded DATA, PUSH_PROMISE and HEADERS frames that had empty
+  bodies would raise ``InvalidPaddingError`` exceptions when parsed.
+
 3.0.0 (2016-01-08)
 ------------------
 
