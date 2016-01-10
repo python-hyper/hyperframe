@@ -173,6 +173,11 @@ class TestPriorityFrame(object):
         assert flags == set()
         assert isinstance(flags, Flags)
 
+    def test_priority_frame_default_serializes_properly(self):
+        f = PriorityFrame(1)
+
+        assert f.serialize() == b'\x00\x00\x05\x02\x00\x00\x00\x00\x01\x00\x00\x00\x00\x00'
+
     def test_priority_frame_with_all_data_serializes_properly(self):
         f = PriorityFrame(1)
         f.depends_on = 0x04
