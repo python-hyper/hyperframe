@@ -9,6 +9,7 @@ socket.
 """
 import collections
 import struct
+import binascii
 
 from .exceptions import UnknownFrameError, InvalidPaddingError
 from .flags import Flag, Flags
@@ -55,9 +56,9 @@ class Frame(object):
 
     def __repr__(self):
         flags = ", ".join(self.flags) or "None"
-        body = self.serialize_body()
-        if len(body) > 100:
-            body = str(body[:100]) + "..."
+        body = binascii.hexlify(self.serialize_body()).decode('ascii')
+        if len(body) > 20:
+            body = body[:20] + "..."
         return (
             "{type}(Stream: {stream}; Flags: {flags}): {body}"
         ).format(type=type(self).__name__, stream=self.stream_id, flags=flags, body=body)
