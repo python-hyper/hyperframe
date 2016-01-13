@@ -1,6 +1,20 @@
 Release History
 ===============
 
+3.1.0 (2016-01-13)
+------------------
+
+**API Changes**
+
+- Added new ``InvalidFrameError`` that is thrown instead of ``struct.error``
+  when parsing a frame.
+
+**Bugfixes**
+
+- Fixed error when trying to serialize frames that use Priority information
+  with the defaults for that information.
+- Fixed errors when displaying the repr of frames with non-printable bodies.
+
 3.0.1 (2016-01-08)
 ------------------
 
