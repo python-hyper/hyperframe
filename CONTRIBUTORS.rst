@@ -30,3 +30,15 @@ In chronological order:
 
   - Updated documentation and tests.
 
+- Maximilian Hils (@mhils)
+
+  - Added repr for frames.
+  - Improved frame initialization code.
+  - Added flag validation.
+
+- Thomas Kriechbaumer (@Kriechi)
+
+  - Improved initialization code.
+  - Fixed bugs in frame initialization code.
+  - Improved frame repr for frames with non-printable bodies.
+
