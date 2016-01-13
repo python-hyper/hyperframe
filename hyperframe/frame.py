@@ -171,7 +171,7 @@ class Priority(object):
     Mixin for frames that contain priority data. Defines extra fields that can
     be used and set by frames that contain priority data.
     """
-    def __init__(self, stream_id, depends_on=None, stream_weight=None, exclusive=None, **kwargs):
+    def __init__(self, stream_id, depends_on=0x0, stream_weight=0x0, exclusive=False, **kwargs):
         super(Priority, self).__init__(stream_id, **kwargs)
 
         #: The stream ID of the stream on which this stream depends.
