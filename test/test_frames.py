@@ -4,7 +4,9 @@ from hyperframe.frame import (
     PushPromiseFrame, PingFrame, GoAwayFrame, WindowUpdateFrame, HeadersFrame,
     ContinuationFrame, AltSvcFrame, Origin, BlockedFrame,
 )
-from hyperframe.exceptions import UnknownFrameError, InvalidPaddingError
+from hyperframe.exceptions import (
+    UnknownFrameError, InvalidPaddingError, InvalidFrameError
+)
 import pytest
 
 
@@ -53,6 +55,10 @@ class TestGeneralFrameBehaviour(object):
         monkeypatch.setattr(Frame, "serialize_body", lambda _: b"A"*25)
         assert repr(f) == "Frame(Stream: 0; Flags: None): {}...".format("41"*10)
 
+    def test_cannot_parse_invalid_frame_header(self):
+        with pytest.raises(InvalidFrameError):
+            Frame.parse_frame_header(b'\x00\x00\x08\x00\x01\x00\x00\x00')
+
 
 class TestDataFrame(object):
     payload = b'\x00\x00\x08\x00\x01\x00\x00\x00\x01testdata'
@@ -99,6 +105,10 @@ class TestDataFrame(object):
         assert f.pad_length == 10
         assert f.data == b'testdata'
         assert f.body_len == 19
+
+    def test_data_frame_with_invalid_padding_errors(self):
+        with pytest.raises(InvalidFrameError):
+            decode_frame(self.payload_with_padding[:9])
 
     def test_data_frame_with_padding_calculates_flow_control_len(self):
         f = DataFrame(1)
@@ -200,6 +210,10 @@ class TestPriorityFrame(object):
         with pytest.raises(ValueError):
             PriorityFrame(0)
 
+    def test_short_priority_frame_errors(self):
+        with pytest.raises(InvalidFrameError):
+            decode_frame(self.payload[:-2])
+
 
 class TestRstStreamFrame(object):
     def test_rst_stream_frame_has_no_flags(self):
@@ -295,6 +309,10 @@ class TestSettingsFrame(object):
         with pytest.raises(ValueError):
             SettingsFrame(stream_id=1)
 
+    def test_short_settings_frame_errors(self):
+        with pytest.raises(InvalidFrameError):
+            decode_frame(self.serialized[:-2])
+
 
 class TestPushPromiseFrame(object):
     def test_push_promise_frame_flags(self):
@@ -346,6 +364,15 @@ class TestPushPromiseFrame(object):
 
         new_frame = decode_frame(data)
         assert new_frame.data == b''
+
+    def test_short_push_promise_errors(self):
+        s = (
+            b'\x00\x00\x0F\x05\x04\x00\x00\x00\x01' +
+            b'\x00\x00\x00'  # One byte short
+        )
+
+        with pytest.raises(InvalidFrameError):
+            decode_frame(s)
 
 
 class TestPingFrame(object):
@@ -431,6 +458,15 @@ class TestGoAwayFrame(object):
         with pytest.raises(ValueError):
             GoAwayFrame(stream_id=1)
 
+    def test_short_goaway_frame_errors(self):
+        s = (
+            b'\x00\x00\x0D\x07\x00\x00\x00\x00\x00' +  # Frame header
+            b'\x00\x00\x00\x40'                     +  # Last Stream ID
+            b'\x00\x00\x00'                            # short Error Code
+        )
+        with pytest.raises(InvalidFrameError):
+            decode_frame(s)
+
 
 class TestWindowUpdateFrame(object):
     def test_window_update_has_no_flags(self):
@@ -455,6 +491,12 @@ class TestWindowUpdateFrame(object):
         assert f.flags == set()
         assert f.window_increment == 512
         assert f.body_len == 4
+
+    def test_short_windowupdate_frame_errors(self):
+        s = b'\x00\x00\x04\x08\x00\x00\x00\x00\x00\x00\x00\x02'  # -1 byte
+
+        with pytest.raises(InvalidFrameError):
+            decode_frame(s)
 
 
 class TestHeadersFrame(object):
@@ -637,6 +679,10 @@ class TestAltSvcFrame(object):
     def test_altsvc_frame_never_has_a_stream(self):
         with pytest.raises(ValueError):
             AltSvcFrame(stream_id=1)
+
+    def test_short_altsvc_frame_errors(self):
+        with pytest.raises(InvalidFrameError):
+            decode_frame(self.payload_without_origin[:12])
 
 
 class TestBlockedFrame(object):
