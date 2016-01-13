@@ -11,7 +11,9 @@ import collections
 import struct
 import binascii
 
-from .exceptions import UnknownFrameError, InvalidPaddingError
+from .exceptions import (
+    UnknownFrameError, InvalidPaddingError, InvalidFrameError
+)
 from .flags import Flag, Flags
 
 # The maximum initial length of a frame. Some frames have shorter maximum lengths.
@@ -74,7 +76,11 @@ class Frame(object):
         :raises hyperframe.exceptions.UnknownFrameError: If a frame of unknown
             type is received.
         """
-        fields = struct.unpack("!HBBBL", header)
+        try:
+            fields = struct.unpack("!HBBBL", header)
+        except struct.error:
+            raise InvalidFrameError("Invalid frame header")
+
         # First 24 bits are frame length.
         length = (fields[0] << 8) + fields[1]
         type = fields[2]
@@ -157,7 +163,10 @@ class Padding(object):
 
     def parse_padding_data(self, data):
         if 'PADDED' in self.flags:
-            self.pad_length = struct.unpack('!B', data[:1])[0]
+            try:
+                self.pad_length = struct.unpack('!B', data[:1])[0]
+            except struct.error:
+                raise InvalidFrameError("Invalid Padding data")
             return 1
         return 0
 
@@ -192,9 +201,14 @@ class Priority(object):
 
     def parse_priority_data(self, data):
         MASK = 0x80000000
-        self.depends_on, self.stream_weight = struct.unpack(
-            "!LB", data[:5]
-        )
+
+        try:
+            self.depends_on, self.stream_weight = struct.unpack(
+                "!LB", data[:5]
+            )
+        except struct.error:
+            raise InvalidFrameError("Invalid Priority data")
+
         self.exclusive = bool(self.depends_on & MASK)
         self.depends_on &= ~MASK
         return 5
@@ -298,7 +312,11 @@ class RstStreamFrame(Frame):
         if len(data) != 4:
             raise ValueError()
 
-        self.error_code = struct.unpack("!L", data)[0]
+        try:
+            self.error_code = struct.unpack("!L", data)[0]
+        except struct.error:  # pragma: no cover
+            raise InvalidFrameError("Invalid RST_STREAM body")
+
         self.body_len = len(data)
 
 
@@ -353,7 +371,11 @@ class SettingsFrame(Frame):
 
     def parse_body(self, data):
         for i in range(0, len(data), 6):
-            name, value = struct.unpack("!HL", data[i:i+6])
+            try:
+                name, value = struct.unpack("!HL", data[i:i+6])
+            except struct.error:
+                raise InvalidFrameError("Invalid SETTINGS body")
+
             self.settings[name] = value
 
         self.body_len = len(data)
@@ -393,7 +415,14 @@ class PushPromiseFrame(Padding, Frame):
 
     def parse_body(self, data):
         padding_data_length = self.parse_padding_data(data)
-        self.promised_stream_id = struct.unpack("!L", data[padding_data_length:padding_data_length + 4])[0]
+
+        try:
+            self.promised_stream_id = struct.unpack(
+                "!L", data[padding_data_length:padding_data_length + 4]
+            )[0]
+        except struct.error:
+            raise InvalidFrameError("Invalid PUSH_PROMISE body")
+
         self.data = data[padding_data_length + 4:].tobytes()
         self.body_len = len(data)
 
@@ -475,7 +504,13 @@ class GoAwayFrame(Frame):
         return data
 
     def parse_body(self, data):
-        self.last_stream_id, self.error_code = struct.unpack("!LL", data[:8])
+        try:
+            self.last_stream_id, self.error_code = struct.unpack(
+                "!LL", data[:8]
+            )
+        except struct.error:
+            raise InvalidFrameError("Invalid GOAWAY body.")
+
         self.body_len = len(data)
 
         if len(data) > 8:
@@ -513,7 +548,11 @@ class WindowUpdateFrame(Frame):
         return struct.pack("!L", self.window_increment & 0x7FFFFFFF)
 
     def parse_body(self, data):
-        self.window_increment = struct.unpack("!L", data)[0]
+        try:
+            self.window_increment = struct.unpack("!L", data)[0]
+        except struct.error:
+            raise InvalidFrameError("Invalid WINDOW_UPDATE body")
+
         self.body_len = len(data)
 
 
@@ -652,16 +691,21 @@ class AltSvcFrame(Frame):
                          self.serialize_origin()])
 
     def parse_body(self, data):
-        self.body_len = len(data)
-        self.max_age, self.port, protocol_id_length = struct.unpack("!LHxB", data[:8])
-        pos = 8
-        self.protocol_id = data[pos:pos+protocol_id_length].tobytes()
-        pos += protocol_id_length
-        host_length = struct.unpack("!B", data[pos:pos+1])[0]
-        pos += 1
-        self.host = data[pos:pos+host_length].tobytes()
-        pos += host_length
-        self.parse_origin(data[pos:])
+        try:
+            self.body_len = len(data)
+            self.max_age, self.port, protocol_id_length = struct.unpack(
+                "!LHxB", data[:8]
+            )
+            pos = 8
+            self.protocol_id = data[pos:pos+protocol_id_length].tobytes()
+            pos += protocol_id_length
+            host_length = struct.unpack("!B", data[pos:pos+1])[0]
+            pos += 1
+            self.host = data[pos:pos+host_length].tobytes()
+            pos += host_length
+            self.parse_origin(data[pos:])
+        except struct.error:
+            raise InvalidFrameError("Invalid ALTSVC frame body.")
 
 
 class BlockedFrame(Frame):
