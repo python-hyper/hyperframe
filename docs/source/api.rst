@@ -73,3 +73,6 @@ Exceptions
 
 .. autoclass:: hyperframe.exceptions.InvalidPaddingError
    :members:
+
+.. autoclass:: hyperframe.exceptions.InvalidFrameError
+   :members:
