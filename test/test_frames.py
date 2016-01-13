@@ -47,11 +47,11 @@ class TestGeneralFrameBehaviour(object):
 
     def test_repr(self, monkeypatch):
         f = Frame(stream_id=0)
-        monkeypatch.setattr(Frame, "serialize_body", lambda _: "body")
-        assert repr(f) == "Frame(Stream: 0; Flags: None): body"
+        monkeypatch.setattr(Frame, "serialize_body", lambda _: b"body")
+        assert repr(f) == "Frame(Stream: 0; Flags: None): 626f6479"
 
-        monkeypatch.setattr(Frame, "serialize_body", lambda _: "A"*105)
-        assert repr(f) == "Frame(Stream: 0; Flags: None): {}...".format("A"*100)
+        monkeypatch.setattr(Frame, "serialize_body", lambda _: b"A"*25)
+        assert repr(f) == "Frame(Stream: 0; Flags: None): {}...".format("41"*10)
 
 
 class TestDataFrame(object):
