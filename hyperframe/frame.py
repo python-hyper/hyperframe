@@ -459,7 +459,7 @@ class PingFrame(Frame):
         return data
 
     def parse_body(self, data):
-        if len(data) > 8:
+        if len(data) != 8:
             raise ValueError()
 
         self.opaque_data = data.tobytes()
