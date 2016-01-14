@@ -1,6 +1,13 @@
 Release History
 ===============
 
+dev
+---
+
+**Bugfixes**
+
+- Correctly error when receiving Ping frames that have insufficient data.
+
 3.1.0 (2016-01-13)
 ------------------
 

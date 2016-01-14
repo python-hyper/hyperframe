@@ -417,6 +417,11 @@ class TestPingFrame(object):
         with pytest.raises(ValueError):
             f.parse_body(b'\x01\x02\x03\x04\x05\x06\x07\x08\x09')
 
+    def test_ping_frame_has_no_less_than_body_length_8(self):
+        f = PingFrame()
+        with pytest.raises(ValueError):
+            f.parse_body(b'\x01\x02\x03\x04\x05\x06\x07')
+
 
 class TestGoAwayFrame(object):
     def test_go_away_has_no_flags(self):
