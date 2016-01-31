@@ -343,17 +343,26 @@ class SettingsFrame(Frame):
     # We need to define the known settings, they may as well be class
     # attributes.
     #: The byte that signals the SETTINGS_HEADER_TABLE_SIZE setting.
-    HEADER_TABLE_SIZE             = 0x01
+    HEADER_TABLE_SIZE      = 0x01
     #: The byte that signals the SETTINGS_ENABLE_PUSH setting.
-    ENABLE_PUSH                   = 0x02
+    ENABLE_PUSH            = 0x02
     #: The byte that signals the SETTINGS_MAX_CONCURRENT_STREAMS setting.
-    MAX_CONCURRENT_STREAMS        = 0x03
+    MAX_CONCURRENT_STREAMS = 0x03
     #: The byte that signals the SETTINGS_INITIAL_WINDOW_SIZE setting.
-    INITIAL_WINDOW_SIZE           = 0x04
+    INITIAL_WINDOW_SIZE    = 0x04
     #: The byte that signals the SETTINGS_MAX_FRAME_SIZE setting.
-    SETTINGS_MAX_FRAME_SIZE       = 0x05
+    MAX_FRAME_SIZE         = 0x05
     #: The byte that signals the SETTINGS_MAX_HEADER_LIST_SIZE setting.
-    SETTINGS_MAX_HEADER_LIST_SIZE = 0x06
+    MAX_HEADER_LIST_SIZE   = 0x06
+
+    #: The byte that signals the SETTINGS_MAX_FRAME_SIZE setting.
+    #: .. deprecated:: 3.2.0
+    #:    Use :data:`MAX_FRAME_SIZE <SettingsFrame.MAX_FRAME_SIZE>` instead.
+    SETTINGS_MAX_FRAME_SIZE = MAX_FRAME_SIZE
+    #: The byte that signals the SETTINGS_MAX_HEADER_LIST_SIZE setting.
+    #: .. deprecated:: 3.2.0
+    #     Use :data:`MAX_HEADER_LIST_SIZE <SettingsFrame.MAX_HEADER_LIST_SIZE>` instead.
+    SETTINGS_MAX_HEADER_LIST_SIZE = MAX_HEADER_LIST_SIZE
 
     def __init__(self, stream_id=0, settings=None, **kwargs):
         super(SettingsFrame, self).__init__(stream_id, **kwargs)
