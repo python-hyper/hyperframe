@@ -137,8 +137,8 @@ class Frame(object):
         the non-header parts of the frame: that is, it does not populate the
         stream ID or flags.
 
-        :param data: A bytestring containing the body data of the frame. Must
-                     not contain *more* data than the length returned by
+        :param data: A memoryview object containing the body data of the frame.
+                     Must not contain *more* data than the length returned by
                      :meth:`parse_frame_header
                      <hyperframe.frame.Frame.parse_frame_header>`.
         """
