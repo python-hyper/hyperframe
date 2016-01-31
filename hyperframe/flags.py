@@ -36,5 +36,5 @@ class Flags(collections.MutableSet):
 
     def add(self, value):
         if value not in self._valid_flags:
-            raise ValueError("Unexpected flag: {}".format(value))
+            raise ValueError("Unexpected flag: {}. Valid flags are: {}".format(value, self._valid_flags))
         return self._flags.add(value)
