@@ -255,8 +255,8 @@ class TestSettingsFrame(object):
         b'\x00\x02\x00\x00\x00\x00'             +  # ENABLE_PUSH
         b'\x00\x03\x00\x00\x00\x64'             +  # MAX_CONCURRENT_STREAMS
         b'\x00\x04\x00\x00\xFF\xFF'             +  # INITIAL_WINDOW_SIZE
-        b'\x00\x05\x00\x00\x40\x00'             +  # SETTINGS_MAX_FRAME_SIZE
-        b'\x00\x06\x00\x00\xFF\xFF'                # SETTINGS_MAX_HEADER_LIST_SIZE
+        b'\x00\x05\x00\x00\x40\x00'             +  # MAX_FRAME_SIZE
+        b'\x00\x06\x00\x00\xFF\xFF'                # MAX_HEADER_LIST_SIZE
     )
 
     settings = {
@@ -264,8 +264,8 @@ class TestSettingsFrame(object):
         SettingsFrame.ENABLE_PUSH: 0,
         SettingsFrame.MAX_CONCURRENT_STREAMS: 100,
         SettingsFrame.INITIAL_WINDOW_SIZE: 65535,
-        SettingsFrame.SETTINGS_MAX_FRAME_SIZE: 16384,
-        SettingsFrame.SETTINGS_MAX_HEADER_LIST_SIZE: 65535,
+        SettingsFrame.MAX_FRAME_SIZE: 16384,
+        SettingsFrame.MAX_HEADER_LIST_SIZE: 65535,
     }
 
     def test_settings_frame_has_only_one_flag(self):
