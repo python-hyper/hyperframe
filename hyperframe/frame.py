@@ -721,7 +721,7 @@ class AltSvcFrame(Frame):
             self.host = data[pos:pos+host_length].tobytes()
             pos += host_length
             self.parse_origin(data[pos:])
-        except struct.error:
+        except (struct.error, ValueError):
             raise InvalidFrameError("Invalid ALTSVC frame body.")
 
 

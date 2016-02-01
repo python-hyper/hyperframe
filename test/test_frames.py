@@ -625,6 +625,11 @@ class TestAltSvcFrame(object):
         b'\x00\x00\x00\x1D\x00\x50\x00\x02'
         b'h2\x0Agoogle.com'
     )
+    payload_with_bad_origin = (
+        b'\x00\x00\x2B\x0A\x00\x00\x00\x00\x00'
+        b'\x00\x00\x00\x1D\x00\x50\x00\x02'
+        b'h2\x0Agoogle.comyahoo.com:8080'
+    )
 
     def test_altsvc_frame_flags(self):
         f = AltSvcFrame()
@@ -688,6 +693,10 @@ class TestAltSvcFrame(object):
     def test_short_altsvc_frame_errors(self):
         with pytest.raises(InvalidFrameError):
             decode_frame(self.payload_without_origin[:12])
+
+    def test_altsvc_with_bad_origin_fails(self):
+        with pytest.raises(InvalidFrameError):
+            decode_frame(self.payload_with_bad_origin)
 
 
 class TestBlockedFrame(object):
