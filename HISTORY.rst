@@ -1,6 +1,16 @@
 Release History
 ===============
 
+dev
+---
+
+**API Changes (Backward-compatible)**
+
+- Invalid PING frame bodies now raise ``InvalidFrameError``, not
+  ``ValueError``. Note that ``InvalidFrameError`` is a ``ValueError`` subclass.
+- Invalid RST_STREAM frame bodies now raise ``InvalidFramError``, not
+  ``ValueError``. Note that ``InvalidFrameError`` is a ``ValueError`` subclass.
+
 3.1.1 (2016-01-18)
 ------------------
 

@@ -310,7 +310,10 @@ class RstStreamFrame(Frame):
 
     def parse_body(self, data):
         if len(data) != 4:
-            raise ValueError()
+            raise InvalidFrameError(
+                "RST_STREAM must have 4 byte body: actual length %s." %
+                len(data)
+            )
 
         try:
             self.error_code = struct.unpack("!L", data)[0]
@@ -461,7 +464,10 @@ class PingFrame(Frame):
 
     def serialize_body(self):
         if len(self.opaque_data) > 8:
-            raise ValueError()
+            raise InvalidFrameError(
+                "PING frame may not have more than 8 bytes of data, got %s" %
+                self.opaque_data
+            )
 
         data = self.opaque_data
         data += b'\x00' * (8 - len(self.opaque_data))
@@ -469,7 +475,9 @@ class PingFrame(Frame):
 
     def parse_body(self, data):
         if len(data) != 8:
-            raise ValueError()
+            raise InvalidFrameError(
+                "PING frame must have 8 byte length: got %s" % len(data)
+            )
 
         self.opaque_data = data.tobytes()
         self.body_len = len(data)
