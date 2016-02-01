@@ -11,6 +11,12 @@ dev
 - Invalid RST_STREAM frame bodies now raise ``InvalidFramError``, not
   ``ValueError``. Note that ``InvalidFrameError`` is a ``ValueError`` subclass.
 
+**Bugfixes**
+
+- The change in ``3.1.0`` that ensured that ``InvalidFrameError`` would be
+  thrown did not affect certain invalid values in ALT_SVC frames. This has been
+  fixed: ``ValueError`` will no longer be thrown from invalid ALT_SVC bodies.
+
 3.1.1 (2016-01-18)
 ------------------
 
