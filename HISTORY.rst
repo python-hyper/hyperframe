@@ -10,6 +10,11 @@ dev
   ``ValueError``. Note that ``InvalidFrameError`` is a ``ValueError`` subclass.
 - Invalid RST_STREAM frame bodies now raise ``InvalidFramError``, not
   ``ValueError``. Note that ``InvalidFrameError`` is a ``ValueError`` subclass.
+- Canonicalized the names of ``SettingsFrame.SETTINGS_MAX_FRAME_SIZE`` and
+  ``SettingsFrame.SETTINGS_MAX_HEADER_LIST_SIZE`` to match their peers, by
+  adding new properties ``SettingsFrame.MAX_FRAME_SIZE`` and
+  ``SettingsFrame.SETTINGS_MAX_HEADER_LIST_SIZE``. The old names are still
+  present, but will be deprecated in 4.0.0.
 
 **Bugfixes**
 
