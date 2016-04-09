@@ -4,8 +4,9 @@ certs:
 	curl http://ci.kennethreitz.org/job/ca-bundle/lastSuccessfulBuild/artifact/cacerts.pem -o hyper/certs.pem
 
 publish:
-	python setup.py sdist upload
-	python setup.py bdist_wheel upload
+	rm -rf dist/
+	python setup.py sdist bdist_wheel
+	twine upload -s dist/*
 
 test:
 	py.test -n 4 --cov hyperframe test/
