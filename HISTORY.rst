@@ -1,6 +1,13 @@
 Release History
 ===============
 
+dev
+---
+
+**Backwards Incompatible API Changes**
+
+- Updated old ALTSVC frame definition to match the newly specified RFC 7838.
+
 3.2.0 (2016-02-02)
 ------------------
 

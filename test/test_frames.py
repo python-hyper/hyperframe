@@ -2,7 +2,7 @@
 from hyperframe.frame import (
     Frame, Flags, DataFrame, PriorityFrame, RstStreamFrame, SettingsFrame,
     PushPromiseFrame, PingFrame, GoAwayFrame, WindowUpdateFrame, HeadersFrame,
-    ContinuationFrame, AltSvcFrame, Origin, BlockedFrame,
+    ContinuationFrame, AltSvcFrame, BlockedFrame,
 )
 from hyperframe.exceptions import (
     UnknownFrameError, InvalidPaddingError, InvalidFrameError
@@ -616,34 +616,43 @@ class TestContinuationFrame(object):
 
 class TestAltSvcFrame(object):
     payload_with_origin = (
-        b'\x00\x00\x2B\x0A\x00\x00\x00\x00\x00'
-        b'\x00\x00\x00\x1D\x00\x50\x00\x02'
-        b'h2\x0Agoogle.comhttps://yahoo.com:8080'
+        b'\x00\x00\x31'  # Length
+        b'\x0A'  # Type
+        b'\x00'  # Flags
+        b'\x00\x00\x00\x00'  # Stream ID
+        b'\x00\x0B'  # Origin len
+        b'example.com'  # Origin
+        b'h2="alt.example.com:8000", h2=":443"'  # Field Value
     )
     payload_without_origin = (
-        b'\x00\x00\x15\x0A\x00\x00\x00\x00\x00'
-        b'\x00\x00\x00\x1D\x00\x50\x00\x02'
-        b'h2\x0Agoogle.com'
+        b'\x00\x00\x13'  # Length
+        b'\x0A'  # Type
+        b'\x00'  # Flags
+        b'\x00\x00\x00\x01'  # Stream ID
+        b'\x00\x00'  # Origin len
+        b''  # Origin
+        b'h2=":8000"; ma=60'  # Field Value
     )
-    payload_with_bad_origin = (
-        b'\x00\x00\x2B\x0A\x00\x00\x00\x00\x00'
-        b'\x00\x00\x00\x1D\x00\x50\x00\x02'
-        b'h2\x0Agoogle.comyahoo.com:8080'
+    payload_with_origin_and_stream = (
+        b'\x00\x00\x36'  # Length
+        b'\x0A'  # Type
+        b'\x00'  # Flags
+        b'\x00\x00\x00\x01'  # Stream ID
+        b'\x00\x0B'  # Origin len
+        b'example.com'  # Origin
+        b'Alt-Svc: h2=":443"; ma=2592000; persist=1'  # Field Value
     )
 
     def test_altsvc_frame_flags(self):
-        f = AltSvcFrame()
+        f = AltSvcFrame(stream_id=0)
         flags = f.parse_flags(0xFF)
 
         assert flags == set()
 
     def test_altsvc_frame_with_origin_serializes_properly(self):
-        f = AltSvcFrame()
-        f.host = b'google.com'
-        f.port = 80
-        f.protocol_id = b'h2'
-        f.max_age = 29
-        f.origin = Origin(scheme=b'https', host=b'yahoo.com', port=8080)
+        f = AltSvcFrame(stream_id=0)
+        f.origin = b'example.com'
+        f.field = b'h2="alt.example.com:8000", h2=":443"'
 
         s = f.serialize()
         assert s == self.payload_with_origin
@@ -652,20 +661,13 @@ class TestAltSvcFrame(object):
         f = decode_frame(self.payload_with_origin)
 
         assert isinstance(f, AltSvcFrame)
-        assert f.host == b'google.com'
-        assert f.port == 80
-        assert f.protocol_id == b'h2'
-        assert f.max_age == 29
-        assert f.origin == Origin(scheme=b'https', host=b'yahoo.com', port=8080)
-        assert f.body_len == 43
+        assert f.origin == b'example.com'
+        assert f.field == b'h2="alt.example.com:8000", h2=":443"'
+        assert f.body_len == 49
+        assert f.stream_id == 0
 
     def test_altsvc_frame_without_origin_serializes_properly(self):
-        f = AltSvcFrame()
-        f.host = b'google.com'
-        f.port = 80
-        f.protocol_id = b'h2'
-        f.max_age = 29
-
+        f = AltSvcFrame(stream_id=1, origin=b'', field=b'h2=":8000"; ma=60')
         s = f.serialize()
         assert s == self.payload_without_origin
 
@@ -673,30 +675,38 @@ class TestAltSvcFrame(object):
         f = decode_frame(self.payload_without_origin)
 
         assert isinstance(f, AltSvcFrame)
-        assert f.host == b'google.com'
-        assert f.port == 80
-        assert f.protocol_id == b'h2'
-        assert f.max_age == 29
-        assert f.origin is None
-        assert f.body_len == 21
+        assert f.origin == b''
+        assert f.field == b'h2=":8000"; ma=60'
+        assert f.body_len == 19
+        assert f.stream_id == 1
 
-    def test_altsvc_frame_serialize_origin_without_port(self):
-        f = AltSvcFrame()
-        f.origin = Origin(scheme=b'https', host=b'yahoo.com', port=None)
+    def test_altsvc_frame_with_origin_and_stream_serializes_properly(self):
+        # This frame is not valid, but we allow it to be serialized anyway.
+        f = AltSvcFrame(stream_id=1)
+        f.origin = b'example.com'
+        f.field = b'Alt-Svc: h2=":443"; ma=2592000; persist=1'
 
-        assert f.serialize_origin() == b'https://yahoo.com'
-
-    def test_altsvc_frame_never_has_a_stream(self):
-        with pytest.raises(ValueError):
-            AltSvcFrame(stream_id=1)
+        assert f.serialize() == self.payload_with_origin_and_stream
 
     def test_short_altsvc_frame_errors(self):
         with pytest.raises(InvalidFrameError):
-            decode_frame(self.payload_without_origin[:12])
+            decode_frame(self.payload_with_origin[:12])
 
-    def test_altsvc_with_bad_origin_fails(self):
         with pytest.raises(InvalidFrameError):
-            decode_frame(self.payload_with_bad_origin)
+            decode_frame(self.payload_with_origin[:10])
+
+    def test_altsvc_with_unicode_origin_fails(self):
+        with pytest.raises(ValueError):
+            AltSvcFrame(
+                stream_id=0, origin=u'hello', field=b'h2=":8000"; ma=60'
+
+            )
+
+    def test_altsvc_with_unicode_field_fails(self):
+        with pytest.raises(ValueError):
+            AltSvcFrame(
+                stream_id=0, origin=b'hello', field=u'h2=":8000"; ma=60'
+            )
 
 
 class TestBlockedFrame(object):

@@ -7,7 +7,6 @@ Defines framing logic for HTTP/2. Provides both classes to represent framed
 data and logic for aiding the connection when it comes to reading from the
 socket.
 """
-import collections
 import struct
 import binascii
 
@@ -663,66 +662,52 @@ class ContinuationFrame(Frame):
         self.body_len = len(data)
 
 
-Origin = collections.namedtuple('Origin', ['scheme', 'host', 'port'])
-
-
 class AltSvcFrame(Frame):
     """
     The ALTSVC frame is used to advertise alternate services that the current
-    host, or a different one, can understand.
+    host, or a different one, can understand. This frame is standardised as
+    part of RFC 7838.
+
+    This frame does no work to validate that the ALTSVC field parameter is
+    acceptable per the rules of RFC 7838.
+
+    .. note:: If the ``stream_id`` of this frame is nonzero, the origin field
+              must have zero length. Conversely, if the ``stream_id`` of this
+              frame is zero, the origin field must have nonzero length. Put
+              another way, a valid ALTSVC frame has ``stream_id != 0`` XOR
+              ``len(origin) != 0``.
     """
     type = 0xA
 
-    stream_association = 'no-stream'
+    stream_association = 'both'
 
-    def __init__(self, stream_id=0, host=b'', port=0, protocol_id=b'', max_age=0, origin=None, **kwargs):
+    def __init__(self, stream_id, origin=b'', field=b'', **kwargs):
         super(AltSvcFrame, self).__init__(stream_id, **kwargs)
 
-        self.host = host
-        self.port = port
-        self.protocol_id = protocol_id
-        self.max_age = max_age
+        if not isinstance(origin, bytes):
+            raise ValueError("AltSvc origin must be bytestring.")
+        if not isinstance(field, bytes):
+            raise ValueError("AltSvc field must be a bytestring.")
         self.origin = origin
-
-    def serialize_origin(self):
-        if self.origin is not None:
-            if self.origin.port is None:
-                hostport = self.origin.host
-            else:
-                hostport = self.origin.host + b':' + str(self.origin.port).encode('ascii')
-            return self.origin.scheme + b'://' + hostport
-        return b''
-
-    def parse_origin(self, data):
-        if len(data) > 0:
-            data = data.tobytes()
-            scheme, hostport = data.split(b'://')
-            host, _, port = hostport.partition(b':')
-            self.origin = Origin(scheme=scheme, host=host,
-                                 port=int(port) if len(port) > 0 else None)
+        self.field = field
 
     def serialize_body(self):
-        first = struct.pack("!LHxB", self.max_age, self.port, len(self.protocol_id))
-        host_length = struct.pack("!B", len(self.host))
-        return b''.join([first, self.protocol_id, host_length, self.host,
-                         self.serialize_origin()])
+        origin_len = struct.pack("!H", len(self.origin))
+        return b''.join([origin_len, self.origin, self.field])
 
     def parse_body(self, data):
         try:
-            self.body_len = len(data)
-            self.max_age, self.port, protocol_id_length = struct.unpack(
-                "!LHxB", data[:8]
-            )
-            pos = 8
-            self.protocol_id = data[pos:pos+protocol_id_length].tobytes()
-            pos += protocol_id_length
-            host_length = struct.unpack("!B", data[pos:pos+1])[0]
-            pos += 1
-            self.host = data[pos:pos+host_length].tobytes()
-            pos += host_length
-            self.parse_origin(data[pos:])
+            origin_len = struct.unpack("!H", data[0:2])[0]
+            self.origin = data[2:2+origin_len]
+
+            if len(self.origin) != origin_len:
+                raise InvalidFrameError("Invalid ALTSVC frame body.")
+
+            self.field = data[2+origin_len:]
         except (struct.error, ValueError):
             raise InvalidFrameError("Invalid ALTSVC frame body.")
+
+        self.body_len = len(data)
 
 
 class BlockedFrame(Frame):
