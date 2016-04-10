@@ -15,7 +15,9 @@ from .exceptions import (
 )
 from .flags import Flag, Flags
 
-# The maximum initial length of a frame. Some frames have shorter maximum lengths.
+
+# The maximum initial length of a frame. Some frames have shorter maximum
+# lengths.
 FRAME_MAX_LEN = (2 ** 14)
 
 # The maximum allowed length of a frame.
@@ -62,7 +64,12 @@ class Frame(object):
             body = body[:20] + "..."
         return (
             "{type}(Stream: {stream}; Flags: {flags}): {body}"
-        ).format(type=type(self).__name__, stream=self.stream_id, flags=flags, body=body)
+        ).format(
+            type=type(self).__name__,
+            stream=self.stream_id,
+            flags=flags,
+            body=body
+        )
 
     @staticmethod
     def parse_frame_header(header):
@@ -118,7 +125,7 @@ class Frame(object):
 
         header = struct.pack(
             "!HBBBL",
-            (self.body_len & 0xFFFF00) >> 8,  # Length is spread over top 24 bits
+            (self.body_len & 0xFFFF00) >> 8,  # Length spread over top 24 bits
             self.body_len & 0x0000FF,
             self.type,
             flags,
@@ -179,7 +186,12 @@ class Priority(object):
     Mixin for frames that contain priority data. Defines extra fields that can
     be used and set by frames that contain priority data.
     """
-    def __init__(self, stream_id, depends_on=0x0, stream_weight=0x0, exclusive=False, **kwargs):
+    def __init__(self,
+                 stream_id,
+                 depends_on=0x0,
+                 stream_weight=0x0,
+                 exclusive=False,
+                 **kwargs):
         super(Priority, self).__init__(stream_id, **kwargs)
 
         #: The stream ID of the stream on which this stream depends.
@@ -243,7 +255,9 @@ class DataFrame(Padding, Frame):
 
     def parse_body(self, data):
         padding_data_length = self.parse_padding_data(data)
-        self.data = data[padding_data_length:len(data)-self.total_padding].tobytes()
+        self.data = (
+            data[padding_data_length:len(data)-self.total_padding].tobytes()
+        )
         self.body_len = len(data)
 
         if self.total_padding and self.total_padding >= self.body_len:
@@ -345,18 +359,17 @@ class SettingsFrame(Frame):
     # We need to define the known settings, they may as well be class
     # attributes.
     #: The byte that signals the SETTINGS_HEADER_TABLE_SIZE setting.
-    HEADER_TABLE_SIZE      = 0x01
+    HEADER_TABLE_SIZE = 0x01
     #: The byte that signals the SETTINGS_ENABLE_PUSH setting.
-    ENABLE_PUSH            = 0x02
+    ENABLE_PUSH = 0x02
     #: The byte that signals the SETTINGS_MAX_CONCURRENT_STREAMS setting.
     MAX_CONCURRENT_STREAMS = 0x03
     #: The byte that signals the SETTINGS_INITIAL_WINDOW_SIZE setting.
-    INITIAL_WINDOW_SIZE    = 0x04
+    INITIAL_WINDOW_SIZE = 0x04
     #: The byte that signals the SETTINGS_MAX_FRAME_SIZE setting.
-    MAX_FRAME_SIZE         = 0x05
+    MAX_FRAME_SIZE = 0x05
     #: The byte that signals the SETTINGS_MAX_HEADER_LIST_SIZE setting.
-    MAX_HEADER_LIST_SIZE   = 0x06
-
+    MAX_HEADER_LIST_SIZE = 0x06
 
     def __init__(self, stream_id=0, settings=None, **kwargs):
         super(SettingsFrame, self).__init__(stream_id, **kwargs)
@@ -489,7 +502,12 @@ class GoAwayFrame(Frame):
 
     stream_association = 'no-stream'
 
-    def __init__(self, stream_id=0, last_stream_id=0, error_code=0, additional_data=b'', **kwargs):
+    def __init__(self,
+                 stream_id=0,
+                 last_stream_id=0,
+                 error_code=0,
+                 additional_data=b'',
+                 **kwargs):
         super(GoAwayFrame, self).__init__(stream_id, **kwargs)
 
         #: The last stream ID definitely seen by the remote peer.
@@ -616,7 +634,9 @@ class HeadersFrame(Padding, Priority, Frame):
             priority_data_length = 0
 
         self.body_len = len(data)
-        self.data = data[priority_data_length:len(data)-self.total_padding].tobytes()
+        self.data = (
+            data[priority_data_length:len(data)-self.total_padding].tobytes()
+        )
 
         if self.total_padding and self.total_padding >= self.body_len:
             raise InvalidPaddingError("Padding is too long.")
@@ -633,7 +653,7 @@ class ContinuationFrame(Frame):
     different flags and a different type.
     """
     #: The flags defined for CONTINUATION frames.
-    defined_flags = [Flag('END_HEADERS', 0x04),]
+    defined_flags = [Flag('END_HEADERS', 0x04)]
 
     #: The type byte defined for CONTINUATION frames.
     type = 0x09
