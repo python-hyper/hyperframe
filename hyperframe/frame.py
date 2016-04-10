@@ -710,31 +710,6 @@ class AltSvcFrame(Frame):
         self.body_len = len(data)
 
 
-class BlockedFrame(Frame):
-    """
-    The BLOCKED frame indicates that the sender is unable to send data due to a
-    closed flow control window.
-
-    The BLOCKED frame is used to provide feedback about the performance of flow
-    control for the purposes of performance tuning and debugging. The BLOCKED
-    frame can be sent by a peer when flow controlled data cannot be sent due to
-    the connection- or stream-level flow control. This frame MUST NOT be sent
-    if there are other reasons preventing data from being sent, either a lack
-    of available data, or the underlying transport being blocked.
-    """
-    type = 0x0B
-
-    stream_association = 'both'
-
-    defined_flags = []
-
-    def serialize_body(self):
-        return b''
-
-    def parse_body(self, data):
-        pass
-
-
 _FRAME_CLASSES = [
     DataFrame,
     HeadersFrame,
@@ -747,7 +722,6 @@ _FRAME_CLASSES = [
     WindowUpdateFrame,
     ContinuationFrame,
     AltSvcFrame,
-    BlockedFrame
 ]
 #: FRAMES maps the type byte for each frame to the class used to represent that
 #: frame.

@@ -2,7 +2,7 @@
 from hyperframe.frame import (
     Frame, Flags, DataFrame, PriorityFrame, RstStreamFrame, SettingsFrame,
     PushPromiseFrame, PingFrame, GoAwayFrame, WindowUpdateFrame, HeadersFrame,
-    ContinuationFrame, AltSvcFrame, BlockedFrame,
+    ContinuationFrame, AltSvcFrame
 )
 from hyperframe.exceptions import (
     UnknownFrameError, InvalidPaddingError, InvalidFrameError
@@ -707,26 +707,3 @@ class TestAltSvcFrame(object):
             AltSvcFrame(
                 stream_id=0, origin=b'hello', field=u'h2=":8000"; ma=60'
             )
-
-
-class TestBlockedFrame(object):
-    def test_blocked_has_no_flags(self):
-        f = BlockedFrame(0)
-        flags = f.parse_flags(0xFF)
-
-        assert not flags
-        assert isinstance(flags, Flags)
-
-    def test_blocked_serializes_properly(self):
-        f = BlockedFrame(2)
-
-        s = f.serialize()
-        assert s == b'\x00\x00\x00\x0B\x00\x00\x00\x00\x02'
-
-    def test_blocked_frame_parses_properly(self):
-        s = b'\x00\x00\x00\x0B\x00\x00\x00\x00\x02'
-        f = decode_frame(s)
-
-        assert isinstance(f, BlockedFrame)
-        assert f.flags == set()
-        assert f.body_len == 0
