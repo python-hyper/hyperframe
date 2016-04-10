@@ -357,14 +357,6 @@ class SettingsFrame(Frame):
     #: The byte that signals the SETTINGS_MAX_HEADER_LIST_SIZE setting.
     MAX_HEADER_LIST_SIZE   = 0x06
 
-    #: The byte that signals the SETTINGS_MAX_FRAME_SIZE setting.
-    #: .. deprecated:: 3.2.0
-    #:    Use :data:`MAX_FRAME_SIZE <SettingsFrame.MAX_FRAME_SIZE>` instead.
-    SETTINGS_MAX_FRAME_SIZE = MAX_FRAME_SIZE
-    #: The byte that signals the SETTINGS_MAX_HEADER_LIST_SIZE setting.
-    #: .. deprecated:: 3.2.0
-    #     Use :data:`MAX_HEADER_LIST_SIZE <SettingsFrame.MAX_HEADER_LIST_SIZE>` instead.
-    SETTINGS_MAX_HEADER_LIST_SIZE = MAX_HEADER_LIST_SIZE
 
     def __init__(self, stream_id=0, settings=None, **kwargs):
         super(SettingsFrame, self).__init__(stream_id, **kwargs)
