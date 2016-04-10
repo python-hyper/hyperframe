@@ -7,6 +7,7 @@ dev
 **Backwards Incompatible API Changes**
 
 - Updated old ALTSVC frame definition to match the newly specified RFC 7838.
+- Remove BLOCKED frame, which was never actually specified.
 
 3.2.0 (2016-02-02)
 ------------------
