@@ -8,6 +8,8 @@ dev
 
 - Updated old ALTSVC frame definition to match the newly specified RFC 7838.
 - Remove BLOCKED frame, which was never actually specified.
+- Removed previously deprecated ``SettingsFrame.SETTINGS_MAX_FRAME_SIZE`` and
+  ``SettingsFrame.SETTINGS_MAX_HEADER_LIST_SIZE``.
 
 3.2.0 (2016-02-02)
 ------------------
