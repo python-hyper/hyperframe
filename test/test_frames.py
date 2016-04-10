@@ -53,7 +53,9 @@ class TestGeneralFrameBehaviour(object):
         assert repr(f) == "Frame(Stream: 0; Flags: None): 626f6479"
 
         monkeypatch.setattr(Frame, "serialize_body", lambda _: b"A"*25)
-        assert repr(f) == "Frame(Stream: 0; Flags: None): {}...".format("41"*10)
+        assert repr(f) == (
+            "Frame(Stream: 0; Flags: None): {}...".format("41"*10)
+        )
 
     def test_cannot_parse_invalid_frame_header(self):
         with pytest.raises(InvalidFrameError):
@@ -62,7 +64,9 @@ class TestGeneralFrameBehaviour(object):
 
 class TestDataFrame(object):
     payload = b'\x00\x00\x08\x00\x01\x00\x00\x00\x01testdata'
-    payload_with_padding = b'\x00\x00\x13\x00\x09\x00\x00\x00\x01\x0Atestdata' + b'\0' * 10
+    payload_with_padding = (
+        b'\x00\x00\x13\x00\x09\x00\x00\x00\x01\x0Atestdata' + b'\0' * 10
+    )
 
     def test_data_frame_has_correct_flags(self):
         f = DataFrame(1)
@@ -138,7 +142,7 @@ class TestDataFrame(object):
         # The top three bytes should be numerically equal to 300. That means
         # they should read 00 01 2C.
         # The weird double index trick is to ensure this test behaves equally
-        # on Python 2 and Python 3.
+        # on Python 2 and Python 3.
         assert data[0] == b'\x00'[0]
         assert data[1] == b'\x01'[0]
         assert data[2] == b'\x2C'[0]
@@ -153,7 +157,7 @@ class TestDataFrame(object):
         # should change this test if we change that.
         assert f.body_len == 0
 
-        data = f.serialize()
+        f.serialize()
         assert f.body_len == 300
 
     def test_data_frame_with_invalid_padding_fails_to_parse(self):
@@ -186,7 +190,9 @@ class TestPriorityFrame(object):
     def test_priority_frame_default_serializes_properly(self):
         f = PriorityFrame(1)
 
-        assert f.serialize() == b'\x00\x00\x05\x02\x00\x00\x00\x00\x01\x00\x00\x00\x00\x00'
+        assert f.serialize() == (
+            b'\x00\x00\x05\x02\x00\x00\x00\x00\x01\x00\x00\x00\x00\x00'
+        )
 
     def test_priority_frame_with_all_data_serializes_properly(self):
         f = PriorityFrame(1)
@@ -203,7 +209,7 @@ class TestPriorityFrame(object):
         assert f.flags == set()
         assert f.depends_on == 4
         assert f.stream_weight == 64
-        assert f.exclusive == True
+        assert f.exclusive is True
         assert f.body_len == 5
 
     def test_priority_frame_comes_on_a_stream(self):
@@ -251,11 +257,11 @@ class TestRstStreamFrame(object):
 class TestSettingsFrame(object):
     serialized = (
         b'\x00\x00\x24\x04\x01\x00\x00\x00\x00' +  # Frame header
-        b'\x00\x01\x00\x00\x10\x00'             +  # HEADER_TABLE_SIZE
-        b'\x00\x02\x00\x00\x00\x00'             +  # ENABLE_PUSH
-        b'\x00\x03\x00\x00\x00\x64'             +  # MAX_CONCURRENT_STREAMS
-        b'\x00\x04\x00\x00\xFF\xFF'             +  # INITIAL_WINDOW_SIZE
-        b'\x00\x05\x00\x00\x40\x00'             +  # MAX_FRAME_SIZE
+        b'\x00\x01\x00\x00\x10\x00' +              # HEADER_TABLE_SIZE
+        b'\x00\x02\x00\x00\x00\x00' +              # ENABLE_PUSH
+        b'\x00\x03\x00\x00\x00\x64' +              # MAX_CONCURRENT_STREAMS
+        b'\x00\x04\x00\x00\xFF\xFF' +              # INITIAL_WINDOW_SIZE
+        b'\x00\x05\x00\x00\x40\x00' +              # MAX_FRAME_SIZE
         b'\x00\x06\x00\x00\xFF\xFF'                # MAX_HEADER_LIST_SIZE
     )
 
@@ -389,7 +395,8 @@ class TestPingFrame(object):
 
         s = f.serialize()
         assert s == (
-            b'\x00\x00\x08\x06\x01\x00\x00\x00\x00\x01\x02\x00\x00\x00\x00\x00\x00'
+            b'\x00\x00\x08\x06\x01\x00\x00\x00\x00\x01\x02\x00\x00\x00\x00\x00'
+            b'\x00'
         )
 
     def test_no_more_than_8_octets(self):
@@ -400,7 +407,10 @@ class TestPingFrame(object):
             f.serialize()
 
     def test_ping_frame_parses_properly(self):
-        s = b'\x00\x00\x08\x06\x01\x00\x00\x00\x00\x01\x02\x00\x00\x00\x00\x00\x00'
+        s = (
+            b'\x00\x00\x08\x06\x01\x00\x00\x00\x00\x01\x02\x00\x00\x00\x00\x00'
+            b'\x00'
+        )
         f = decode_frame(s)
 
         assert isinstance(f, PingFrame)
@@ -440,16 +450,16 @@ class TestGoAwayFrame(object):
         s = f.serialize()
         assert s == (
             b'\x00\x00\x0D\x07\x00\x00\x00\x00\x00' +  # Frame header
-            b'\x00\x00\x00\x40'                     +  # Last Stream ID
-            b'\x00\x00\x00\x20'                     +  # Error Code
+            b'\x00\x00\x00\x40' +                      # Last Stream ID
+            b'\x00\x00\x00\x20' +                      # Error Code
             b'hello'                                   # Additional data
         )
 
     def test_goaway_frame_parses_properly(self):
         s = (
             b'\x00\x00\x0D\x07\x00\x00\x00\x00\x00' +  # Frame header
-            b'\x00\x00\x00\x40'                     +  # Last Stream ID
-            b'\x00\x00\x00\x20'                     +  # Error Code
+            b'\x00\x00\x00\x40' +                      # Last Stream ID
+            b'\x00\x00\x00\x20' +                      # Error Code
             b'hello'                                   # Additional data
         )
         f = decode_frame(s)
@@ -466,7 +476,7 @@ class TestGoAwayFrame(object):
     def test_short_goaway_frame_errors(self):
         s = (
             b'\x00\x00\x0D\x07\x00\x00\x00\x00\x00' +  # Frame header
-            b'\x00\x00\x00\x40'                     +  # Last Stream ID
+            b'\x00\x00\x00\x40' +                      # Last Stream ID
             b'\x00\x00\x00'                            # short Error Code
         )
         with pytest.raises(InvalidFrameError):
@@ -549,7 +559,7 @@ class TestHeadersFrame(object):
         assert f.data == b''
         assert f.depends_on == 4
         assert f.stream_weight == 64
-        assert f.exclusive == True
+        assert f.exclusive is True
         assert f.body_len == 5
 
     def test_headers_frame_with_priority_serializes_properly(self):

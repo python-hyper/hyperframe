@@ -13,10 +13,11 @@ Flag = collections.namedtuple("Flag", ["name", "bit"])
 
 class Flags(collections.MutableSet):
     """
-    A simple MutableSet implementation that will only accept known flags as elements.
+    A simple MutableSet implementation that will only accept known flags as
+    elements.
 
-    Will behave like a regular set(), except that a ValueError will be thrown when .add()ing
-    unexpected flags.
+    Will behave like a regular set(), except that a ValueError will be thrown
+    when .add()ing unexpected flags.
     """
     def __init__(self, defined_flags):
         self._valid_flags = set(flag.name for flag in defined_flags)
@@ -36,5 +37,9 @@ class Flags(collections.MutableSet):
 
     def add(self, value):
         if value not in self._valid_flags:
-            raise ValueError("Unexpected flag: {}. Valid flags are: {}".format(value, self._valid_flags))
+            raise ValueError(
+                "Unexpected flag: {}. Valid flags are: {}".format(
+                    value, self._valid_flags
+                )
+            )
         return self._flags.add(value)
