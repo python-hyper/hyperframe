@@ -1,6 +1,14 @@
 Release History
 ===============
 
+4.0.1 (2016-03-13)
+------------------
+
+**Bugfixes**
+
+- Fixed bug with the repr of ``AltSvcFrame``, where building it could throw
+  exceptions if the frame had been received from the network.
+
 4.0.0 (2016-03-13)
 ------------------
 
