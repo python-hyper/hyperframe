@@ -710,12 +710,12 @@ class AltSvcFrame(Frame):
     def parse_body(self, data):
         try:
             origin_len = struct.unpack("!H", data[0:2])[0]
-            self.origin = data[2:2+origin_len]
+            self.origin = data[2:2+origin_len].tobytes()
 
             if len(self.origin) != origin_len:
                 raise InvalidFrameError("Invalid ALTSVC frame body.")
 
-            self.field = data[2+origin_len:]
+            self.field = data[2+origin_len:].tobytes()
         except (struct.error, ValueError):
             raise InvalidFrameError("Invalid ALTSVC frame body.")
 
