@@ -690,6 +690,13 @@ class TestAltSvcFrame(object):
         assert f.body_len == 19
         assert f.stream_id == 1
 
+    def test_altsvc_frame_without_origin_parses_with_good_repr(self):
+        f = decode_frame(self.payload_without_origin)
+
+        assert repr(f) == (
+            "AltSvcFrame(Stream: 1; Flags: None): 000068323d223a383030..."
+        )
+
     def test_altsvc_frame_with_origin_and_stream_serializes_properly(self):
         # This frame is not valid, but we allow it to be serialized anyway.
         f = AltSvcFrame(stream_id=1)
