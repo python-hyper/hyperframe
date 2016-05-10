@@ -10,8 +10,8 @@ use the :class:`Priority <hyperframe.frame.Priority>` and
 attributes defined on *those* mixins available as well.
 
 Rather than clutter up the documentation repeatedly documenting those methods
-and objects, we explicitly show the inheritance heirarchy of the frames: don't
-forget to consule the parent classes before deciding if a method or attribute
+and objects, we explicitly show the inheritance hierarchy of the frames: don't
+forget to consult the parent classes before deciding if a method or attribute
 you need is not present!
 
 .. autoclass:: hyperframe.frame.Frame
