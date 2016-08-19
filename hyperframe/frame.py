@@ -691,7 +691,7 @@ class AltSvcFrame(Frame):
     """
     type = 0xA
 
-    stream_association = 'both'
+    stream_association = 'either'
 
     def __init__(self, stream_id, origin=b'', field=b'', **kwargs):
         super(AltSvcFrame, self).__init__(stream_id, **kwargs)
