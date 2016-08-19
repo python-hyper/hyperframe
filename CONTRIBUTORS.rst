@@ -42,3 +42,7 @@ In chronological order:
   - Fixed bugs in frame initialization code.
   - Improved frame repr for frames with non-printable bodies.
 
+- Davey Shafik (@dshafik)
+
+  - Fixed Alt Svc frame stream association.
+

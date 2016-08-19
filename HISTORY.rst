@@ -1,6 +1,14 @@
 Release History
 ===============
 
+dev
+---
+
+**Bugfixes**
+
+- Fixed AltSvc stream association, which was incorrectly set to ``'both'``:
+  should have been ``'either'``.
+
 4.0.1 (2016-03-13)
 ------------------
 
