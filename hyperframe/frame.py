@@ -9,7 +9,6 @@ socket.
 """
 import struct
 import binascii
-import sys
 
 from .exceptions import (
     UnknownFrameError, InvalidPaddingError, InvalidFrameError
