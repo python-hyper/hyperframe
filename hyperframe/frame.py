@@ -9,7 +9,6 @@ socket.
 """
 import struct
 import binascii
-import sys
 
 from .exceptions import (
     UnknownFrameError, InvalidPaddingError, InvalidFrameError
@@ -37,8 +36,6 @@ _STRUCT_LB = struct.Struct("!LB")
 _STRUCT_L = struct.Struct("!L")
 _STRUCT_H = struct.Struct("!H")
 _STRUCT_B = struct.Struct("!B")
-
-_PY3 = sys.version_info > (3, 0, 0)
 
 
 class Frame(object):
