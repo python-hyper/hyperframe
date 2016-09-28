@@ -66,9 +66,11 @@ class Frame(object):
         for flag in flags:
             self.flags.add(flag)
 
-        if not self.stream_id and self.stream_association == _STREAM_ASSOC_HAS_STREAM:
+        if (not self.stream_id and
+           self.stream_association == _STREAM_ASSOC_HAS_STREAM):
             raise ValueError('Stream ID must be non-zero')
-        if self.stream_id and self.stream_association == _STREAM_ASSOC_NO_STREAM:
+        if (self.stream_id and
+           self.stream_association == _STREAM_ASSOC_NO_STREAM):
             raise ValueError('Stream ID must be zero')
 
     def __repr__(self):
