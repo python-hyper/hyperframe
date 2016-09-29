@@ -1,14 +1,15 @@
 #!/usr/bin/env python
 # -*- coding: utf-8 -*-
-import itertools
 import os
 import re
 import sys
+import platform
 
 try:
     from setuptools import setup
 except ImportError:
     from distutils.core import setup
+from distutils.cmd import Command
 
 # Get the version
 version_regex = r'__version__ = ["\']([^"\']*)["\']'
@@ -25,6 +26,53 @@ with open('hyperframe/__init__.py', 'r') as f:
 if sys.argv[-1] == 'publish':
     os.system('python setup.py sdist upload')
     sys.exit()
+
+
+class BenchmarkCommand(Command):
+    description = "Run all the benchmarks for hyperframe."
+    user_options = []
+
+    def initialize_options(self):
+        pass
+
+    def finalize_options(self):
+        pass
+
+    def run(self):
+        try:
+            import importlib
+        except ImportError:
+            print("The module 'importlib' is required to run benchmarks.")
+            sys.exit(1)
+
+        print("Benchmarking System: {} {}".format(
+            platform.system(),
+            platform.processor()
+        ))
+        print("Benchmarking Python: {} {}".format(
+            platform.python_implementation(),
+            platform.python_version()
+        ))
+        print("")
+
+        benchmark_directory = os.path.join(os.path.realpath(os.path.dirname(os.path.abspath(__file__))), "bench")
+        benchmarks = []
+        for module in os.listdir(benchmark_directory):
+            if module.endswith(".py"):
+                module = importlib.import_module("bench." + module[:-3])
+                for bench_class in dir(module):
+                    if not bench_class.startswith("_") and bench_class.endswith("Benchmark"):
+                        try:
+                            benchmark = getattr(module, bench_class)()
+                            benchmarks.append(benchmark)
+                        except Exception:
+                            pass
+
+        print("Collected {} benchmarks to run".format(len(benchmarks)))
+        print("")
+
+        for benchmark in sorted(benchmarks, key=lambda x: x.name):
+            benchmark.run()
 
 
 packages = ['hyperframe']
@@ -55,4 +103,7 @@ setup(
         'Programming Language :: Python :: 3.5',
         'Programming Language :: Python :: Implementation :: CPython',
     ],
+    cmdclass={
+        "bench": BenchmarkCommand
+    }
 )
