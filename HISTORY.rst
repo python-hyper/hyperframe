@@ -8,6 +8,7 @@ dev
 
 - Fixed AltSvc stream association, which was incorrectly set to ``'both'``:
   should have been ``'either'``.
+- Miscellaneous performance improvements to serialization and parsing logic.
 
 4.0.1 (2016-03-13)
 ------------------

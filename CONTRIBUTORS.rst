@@ -46,3 +46,7 @@ In chronological order:
 
   - Fixed Alt Svc frame stream association.
 
+- Seth Michael Larson (@SethMichaelLarson)
+
+  - Performance improvements to serialization and parsing.
+
