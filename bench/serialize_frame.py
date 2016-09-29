@@ -2,7 +2,7 @@ from bench.utils import _BaseBenchmark
 from bench.utils.factories import FRAME_FACTORIES
 
 
-FRAMES_TO_SERIALIZE = 100000
+FRAMES_TO_SERIALIZE = 1000000
 
 
 class _SerializeFrameBenchmark(_BaseBenchmark):
@@ -14,9 +14,9 @@ class _SerializeFrameBenchmark(_BaseBenchmark):
         pass
 
     def benchmark(self):
-        frames = [self.factory() for _ in range(50)]
+        frames = [self.factory() for _ in range(100)]
         for i in range(FRAMES_TO_SERIALIZE):
-            frame = frames[i % 50]
+            frame = frames[i % 100]
 
             self.start_watch()
             frame.serialize()
@@ -54,3 +54,23 @@ class SerializeSettingsFrameAckBenchmark(_SerializeFrameBenchmark):
 class SerializePushPromiseFrameBenchmark(_SerializeFrameBenchmark):
     def __init__(self):
         _SerializeFrameBenchmark.__init__(self, "push_promise")
+        
+        
+class SerializePingFrameBenchmark(_SerializeFrameBenchmark):
+    def __init__(self):
+        _SerializeFrameBenchmark.__init__(self, "ping")
+
+
+class SerializeHeadersFrameBenchmark(_SerializeFrameBenchmark):
+    def __init__(self):
+        _SerializeFrameBenchmark.__init__(self, "headers")
+
+
+class SerializeGoAwayFrameBenchmark(_SerializeFrameBenchmark):
+    def __init__(self):
+        _SerializeFrameBenchmark.__init__(self, "go_away")
+
+
+class SerializeWindowUpdateFrameBenchmark(_SerializeFrameBenchmark):
+    def __init__(self):
+        _SerializeFrameBenchmark.__init__(self, "window_update")
