@@ -395,7 +395,7 @@ class SettingsFrame(Frame):
                          for setting, value in self.settings.items()])
 
     def parse_body(self, data):
-        number_of_settings = 0
+        body_len = 0
         for i in range(0, len(data), 6):
             try:
                 name, value = _STRUCT_HL.unpack(data[i:i+6])
@@ -403,9 +403,9 @@ class SettingsFrame(Frame):
                 raise InvalidFrameError("Invalid SETTINGS body")
 
             self.settings[name] = value
-            number_of_settings += 1
+            body_len += 6
 
-        self.body_len = number_of_settings * 6
+        self.body_len = body_len
 
 
 class PushPromiseFrame(Padding, Frame):
