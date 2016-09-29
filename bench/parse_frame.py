@@ -78,3 +78,13 @@ class ParseGoAwayFrameBenchmark(_ParseFrameBenchmark):
 class ParseWindowUpdateFrameBenchmark(_ParseFrameBenchmark):
     def __init__(self):
         _ParseFrameBenchmark.__init__(self, "window_update")
+
+
+class ParseContinuationFrameBenchmark(_ParseFrameBenchmark):
+    def __init__(self):
+        _ParseFrameBenchmark.__init__(self, "continuation")
+
+
+class ParseAltSvcFrameBenchmark(_ParseFrameBenchmark):
+    def __init__(self):
+        _ParseFrameBenchmark.__init__(self, "alt_svc")

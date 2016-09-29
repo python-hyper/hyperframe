@@ -74,3 +74,13 @@ class SerializeGoAwayFrameBenchmark(_SerializeFrameBenchmark):
 class SerializeWindowUpdateFrameBenchmark(_SerializeFrameBenchmark):
     def __init__(self):
         _SerializeFrameBenchmark.__init__(self, "window_update")
+
+
+class SerializeContinuationFrameBenchmark(_SerializeFrameBenchmark):
+    def __init__(self):
+        _SerializeFrameBenchmark.__init__(self, "continuation")
+
+
+class SerializeAltSvcFrameBenchmark(_SerializeFrameBenchmark):
+    def __init__(self):
+        _SerializeFrameBenchmark.__init__(self, "alt_svc")
