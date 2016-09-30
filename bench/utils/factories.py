@@ -112,6 +112,25 @@ def headers_frame_factory():
     return frame
 
 
+def continuation_frame_factory():
+    frame = ContinuationFrame(get_int(1, MAX_STREAM_ID))
+    frame.data = get_bytes(get_int(0, MAX_PAYLOAD_LENGTH))
+
+    if get_bool():
+        frame.flags.add("END_HEADERS")
+
+    return frame
+
+
+def alt_svc_frame_factory():
+    frame = AltSvcFrame(get_int(1, MAX_STREAM_ID))
+
+    frame.origin = get_bytes(get_int(1, 0xFFFF))
+    frame.field = get_bytes(get_int(0, MAX_PAYLOAD_LENGTH - 2))
+
+    return frame
+
+
 FRAME_FACTORIES = {
     "data": data_frame_factory,
     "priority": priority_frame_factory,
@@ -122,5 +141,7 @@ FRAME_FACTORIES = {
     "ping": ping_frame_factory,
     "go_away": go_away_frame_factory,
     "window_update": window_update_frame_factory,
-    "headers": headers_frame_factory
+    "headers": headers_frame_factory,
+    "continuation": continuation_frame_factory,
+    "alt_svc": alt_svc_frame_factory
 }

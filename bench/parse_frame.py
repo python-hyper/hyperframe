@@ -18,7 +18,7 @@ class _ParseFrameBenchmark(_BaseBenchmark):
         frame = type(frames[0])(frames[0].stream_id)
         frames = [memoryview(x.serialize()) for x in frames]
 
-        for i in range(FRAMES_TO_PARSE):
+        for i in range(self.rounds):
             data = frames[i % 100]
 
             self.start_watch()
@@ -78,3 +78,13 @@ class ParseGoAwayFrameBenchmark(_ParseFrameBenchmark):
 class ParseWindowUpdateFrameBenchmark(_ParseFrameBenchmark):
     def __init__(self):
         _ParseFrameBenchmark.__init__(self, "window_update")
+
+
+class ParseContinuationFrameBenchmark(_ParseFrameBenchmark):
+    def __init__(self):
+        _ParseFrameBenchmark.__init__(self, "continuation")
+
+
+class ParseAltSvcFrameBenchmark(_ParseFrameBenchmark):
+    def __init__(self):
+        _ParseFrameBenchmark.__init__(self, "alt_svc")

@@ -15,7 +15,7 @@ class _SerializeFrameBenchmark(_BaseBenchmark):
 
     def benchmark(self):
         frames = [self.factory() for _ in range(100)]
-        for i in range(FRAMES_TO_SERIALIZE):
+        for i in range(self.rounds):
             frame = frames[i % 100]
 
             self.start_watch()
@@ -74,3 +74,13 @@ class SerializeGoAwayFrameBenchmark(_SerializeFrameBenchmark):
 class SerializeWindowUpdateFrameBenchmark(_SerializeFrameBenchmark):
     def __init__(self):
         _SerializeFrameBenchmark.__init__(self, "window_update")
+
+
+class SerializeContinuationFrameBenchmark(_SerializeFrameBenchmark):
+    def __init__(self):
+        _SerializeFrameBenchmark.__init__(self, "continuation")
+
+
+class SerializeAltSvcFrameBenchmark(_SerializeFrameBenchmark):
+    def __init__(self):
+        _SerializeFrameBenchmark.__init__(self, "alt_svc")
