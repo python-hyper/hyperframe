@@ -117,7 +117,7 @@ def continuation_frame_factory():
     frame.data = get_bytes(get_int(0, MAX_PAYLOAD_LENGTH))
 
     if get_bool():
-        frame.flags.add("END_STREAM")
+        frame.flags.add("END_HEADERS")
 
     return frame
 
