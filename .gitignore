@@ -1,3 +1,4 @@
+.benchmarks/
 build/
 env/
 dist/

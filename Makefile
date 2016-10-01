@@ -1,4 +1,4 @@
-.PHONY: certs publish test bench
+.PHONY: certs publish test bench clean
 
 certs:
 	curl http://ci.kennethreitz.org/job/ca-bundle/lastSuccessfulBuild/artifact/cacerts.pem -o hyper/certs.pem
@@ -12,4 +12,4 @@ test:
 	py.test -n 4 --cov hyperframe test/
 
 bench:
-	python setup.py bench
+	python -m pytest bench/ --benchmark-only --benchmark-group-by=name --benchmark-autosave --benchmark-compare
