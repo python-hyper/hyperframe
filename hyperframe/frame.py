@@ -267,7 +267,7 @@ class DataFrame(Padding, Frame):
         padding_data_length = self.parse_padding_data(data)
         self.body_len = len(data)
         self.data = (
-            data[padding_data_length:self.body_len-self.total_padding].tobytes()
+          data[padding_data_length:self.body_len-self.total_padding].tobytes()
         )
 
         if self.total_padding and self.total_padding >= self.body_len:
@@ -645,7 +645,7 @@ class HeadersFrame(Padding, Priority, Frame):
 
         self.body_len = len(data)
         self.data = (
-            data[priority_data_length:self.body_len-self.total_padding].tobytes()
+          data[priority_data_length:self.body_len-self.total_padding].tobytes()
         )
 
         if self.total_padding and self.total_padding >= self.body_len:
