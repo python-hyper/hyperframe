@@ -1,4 +1,4 @@
-.PHONY: certs publish test bench clean
+.PHONY: certs publish test bench
 
 certs:
 	curl http://ci.kennethreitz.org/job/ca-bundle/lastSuccessfulBuild/artifact/cacerts.pem -o hyper/certs.pem
