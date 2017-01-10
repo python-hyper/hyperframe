@@ -95,6 +95,9 @@ class Frame(object):
 
         This populates the flags field, and determines how long the body is.
 
+        :param strict: Whether to raise an exception when encountering a frame
+            not defined by spec and implemented by hyperframe.
+
         :raises hyperframe.exceptions.UnknownFrameError: If a frame of unknown
             type is received.
         """
@@ -110,15 +113,15 @@ class Frame(object):
         stream_id = fields[4]
 
         if type not in FRAMES:
-            if not strict:
-                frame = ExtensionFrame(
-                    type=type,
-                    flag_byte=flags,
-                    stream_id=stream_id,
-                )
-                return (frame, length)
+            if strict:
+                raise UnknownFrameError(type, length)
 
-            raise UnknownFrameError(type, length)
+            frame = ExtensionFrame(
+                type=type,
+                flag_byte=flags,
+                stream_id=stream_id,
+            )
+            return (frame, length)
 
         frame = FRAMES[type](stream_id)
         frame.parse_flags(flags)
@@ -747,7 +750,7 @@ class ExtensionFrame(Frame):
 
     Although certain byte prefixes are ordained by specification to have
     certain contextual meanings, frames with other prefixes are not prohibited,
-    and may be used to communicate arbitrary meaning between HTTP 2 peers.
+    and may be used to communicate arbitrary meaning between HTTP/2 peers.
 
     Thus, hyperframe, rather than raising an exception when such a frame is
     encountered, wraps it in a generic frame to be properly acted upon by

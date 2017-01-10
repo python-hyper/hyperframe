@@ -1,10 +1,9 @@
 # -*- coding: utf-8 -*-
 from hyperframe.flags import Flag
-
 from hyperframe.frame import (
     Frame, Flags, DataFrame, PriorityFrame, RstStreamFrame, SettingsFrame,
     PushPromiseFrame, PingFrame, GoAwayFrame, WindowUpdateFrame, HeadersFrame,
-    ContinuationFrame, AltSvcFrame
+    ContinuationFrame, AltSvcFrame, ExtensionFrame
 )
 from hyperframe.exceptions import (
     UnknownFrameError, InvalidPaddingError, InvalidFrameError
@@ -57,6 +56,7 @@ class TestGeneralFrameBehaviour(object):
         )
         assert f.type == 0xFF
         assert l == 0x59
+        assert isinstance(f, ExtensionFrame)
 
     def test_add_flag_options_later_unknown_type(self):
         f, l = Frame.parse_frame_header(
