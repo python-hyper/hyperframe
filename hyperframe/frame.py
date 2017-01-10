@@ -88,7 +88,7 @@ class Frame(object):
         )
 
     @staticmethod
-    def parse_frame_header(header):
+    def parse_frame_header(header, strict=False):
         """
         Takes a 9-byte frame header and returns a tuple of the appropriate
         Frame object and the length that needs to be read from the socket.
@@ -110,6 +110,14 @@ class Frame(object):
         stream_id = fields[4]
 
         if type not in FRAMES:
+            if not strict:
+                frame = ExtensionFrame(
+                    type=type,
+                    flag_byte=flags,
+                    stream_id=stream_id,
+                )
+                return (frame, length)
+
             raise UnknownFrameError(type, length)
 
         frame = FRAMES[type](stream_id)
@@ -729,6 +737,44 @@ class AltSvcFrame(Frame):
         except (struct.error, ValueError):
             raise InvalidFrameError("Invalid ALTSVC frame body.")
 
+        self.body_len = len(data)
+
+
+class ExtensionFrame(Frame):
+    """
+    ExtensionFrame is used to wrap frames which are not natively interpretable
+    by hyperframe.
+
+    Although certain byte prefixes are ordained by specification to have
+    certain contextual meanings, frames with other prefixes are not prohibited,
+    and may be used to communicate arbitrary meaning between HTTP 2 peers.
+
+    Thus, hyperframe, rather than raising an exception when such a frame is
+    encountered, wraps it in a generic frame to be properly acted upon by
+    upstream consumers which might have additional context on how to use it.
+    """
+
+    stream_association = _STREAM_ASSOC_EITHER
+
+    def __init__(self, type, flag_byte, stream_id, **kwargs):
+        super(ExtensionFrame, self).__init__(stream_id, **kwargs)
+        self.type = type
+        self.flag_byte = flag_byte
+
+    def assign_flag_mapping(self, flags):
+        """
+        When initially created, an ExtensionFrame has no concept of what flags
+        might be relevant to it, since a frame's flags are defined in the
+        specification for that frame. This method allows a frame to be assigned
+        a flag mapping after the fact, allowing downstream consumers to modify
+        ExtensionFrame to fit their needs.
+        """
+        self.defined_flags = flags
+        self.flags = Flags(self.defined_flags)
+        return self.parse_flags(self.flag_byte)
+
+    def parse_body(self, data):
+        self.body = data.tobytes()
         self.body_len = len(data)
 
 
