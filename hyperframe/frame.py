@@ -100,6 +100,9 @@ class Frame(object):
 
         :raises hyperframe.exceptions.UnknownFrameError: If a frame of unknown
             type is received.
+
+        .. versionchanged:: 5.0.0
+            Added :param:`strict` to accommodate :class:`ExtensionFrame`
         """
         try:
             fields = _STRUCT_HBBBL.unpack(header)
@@ -755,6 +758,8 @@ class ExtensionFrame(Frame):
     Thus, hyperframe, rather than raising an exception when such a frame is
     encountered, wraps it in a generic frame to be properly acted upon by
     upstream consumers which might have additional context on how to use it.
+
+    .. versionadded:: 5.0.0
     """
 
     stream_association = _STREAM_ASSOC_EITHER

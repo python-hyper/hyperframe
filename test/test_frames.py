@@ -57,6 +57,7 @@ class TestGeneralFrameBehaviour(object):
         assert f.type == 0xFF
         assert l == 0x59
         assert isinstance(f, ExtensionFrame)
+        assert f.stream_id == 1
 
     def test_add_flag_options_later_unknown_type(self):
         f, l = Frame.parse_frame_header(
@@ -82,6 +83,7 @@ class TestGeneralFrameBehaviour(object):
         )
         assert f.body == b'hello world!'
         assert f.body_len == 12
+        assert f.stream_id == 1
 
     def test_repr(self, monkeypatch):
         f = Frame(stream_id=0)
