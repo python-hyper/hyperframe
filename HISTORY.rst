@@ -8,6 +8,8 @@ dev
 
 - Fixed AltSvc stream association, which was incorrectly set to ``'both'``:
   should have been ``'either'``.
+- Fixed a bug where stream IDs on received frames were allowed to be 32-bit,
+  instead of 31-bit.
 - Miscellaneous performance improvements to serialization and parsing logic.
 
 4.0.1 (2016-03-13)
