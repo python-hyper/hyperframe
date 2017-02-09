@@ -47,6 +47,12 @@ class TestGeneralFrameBehaviour(object):
             "length 89 bytes"
         )
 
+    def test_parse_frame_header_ignore_first_bit_of_stream_id(self):
+        s = b'\x00\x00\x00\x06\x01\x80\x00\x00\x00'
+        f, _ = Frame.parse_frame_header(s)
+
+        assert f.stream_id == 0
+
     def test_repr(self, monkeypatch):
         f = Frame(stream_id=0)
         monkeypatch.setattr(Frame, "serialize_body", lambda _: b"body")
