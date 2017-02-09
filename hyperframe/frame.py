@@ -107,7 +107,7 @@ class Frame(object):
         length = (fields[0] << 8) + fields[1]
         type = fields[2]
         flags = fields[3]
-        stream_id = fields[4]
+        stream_id = fields[4] & 0x7FFFFFFF
 
         if type not in FRAMES:
             raise UnknownFrameError(type, length)
