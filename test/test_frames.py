@@ -128,6 +128,14 @@ class TestDataFrame(object):
 
         assert f.flow_controlled_length == 19
 
+    def test_data_frame_zero_length_padding_calculates_flow_control_len(self):
+        f = DataFrame(1)
+        f.flags = set(['PADDED'])
+        f.data = b'testdata'
+        f.pad_length = 0
+
+        assert f.flow_controlled_length == len(b'testdata') + 1
+
     def test_data_frame_without_padding_calculates_flow_control_len(self):
         f = DataFrame(1)
         f.data = b'testdata'

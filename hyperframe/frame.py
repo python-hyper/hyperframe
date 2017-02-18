@@ -279,7 +279,11 @@ class DataFrame(Padding, Frame):
         The length of the frame that needs to be accounted for when considering
         flow control.
         """
-        padding_len = self.total_padding + 1 if self.total_padding else 0
+        padding_len = 0
+        if 'PADDED' in self.flags:
+            # Account for extra 1-byte padding length field, which is still
+            # present if possibly zero-valued.
+            padding_len = self.total_padding + 1
         return len(self.data) + padding_len
 
 
