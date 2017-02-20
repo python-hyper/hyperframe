@@ -1,8 +1,8 @@
 Release History
 ===============
 
-dev
----
+4.0.2 (2017-02-20)
+------------------
 
 **Bugfixes**
 
@@ -10,6 +10,8 @@ dev
   should have been ``'either'``.
 - Fixed a bug where stream IDs on received frames were allowed to be 32-bit,
   instead of 31-bit.
+- Fixed a bug with frames that had the ``PADDING`` flag set but zero-length
+  padding, whose flow-controlled length was calculated wrongly.
 - Miscellaneous performance improvements to serialization and parsing logic.
 
 4.0.1 (2016-03-13)
