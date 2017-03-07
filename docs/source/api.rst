@@ -63,6 +63,10 @@ you need is not present!
    :show-inheritance:
    :members:
 
+.. autoclass:: hyperframe.frame.ExtensionFrame
+   :show-inheritance:
+   :members:
+
 .. autodata:: hyperframe.frame.FRAMES
 
 Exceptions

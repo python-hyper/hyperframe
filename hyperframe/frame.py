@@ -88,15 +88,21 @@ class Frame(object):
         )
 
     @staticmethod
-    def parse_frame_header(header):
+    def parse_frame_header(header, strict=False):
         """
         Takes a 9-byte frame header and returns a tuple of the appropriate
         Frame object and the length that needs to be read from the socket.
 
         This populates the flags field, and determines how long the body is.
 
+        :param strict: Whether to raise an exception when encountering a frame
+            not defined by spec and implemented by hyperframe.
+
         :raises hyperframe.exceptions.UnknownFrameError: If a frame of unknown
             type is received.
+
+        .. versionchanged:: 5.0.0
+            Added :param:`strict` to accommodate :class:`ExtensionFrame`
         """
         try:
             fields = _STRUCT_HBBBL.unpack(header)
@@ -109,10 +115,13 @@ class Frame(object):
         flags = fields[3]
         stream_id = fields[4] & 0x7FFFFFFF
 
-        if type not in FRAMES:
-            raise UnknownFrameError(type, length)
+        try:
+            frame = FRAMES[type](stream_id)
+        except KeyError:
+            if strict:
+                raise UnknownFrameError(type, length)
+            frame = ExtensionFrame(type=type, stream_id=stream_id)
 
-        frame = FRAMES[type](stream_id)
         frame.parse_flags(flags)
         return (frame, length)
 
@@ -734,6 +743,61 @@ class AltSvcFrame(Frame):
             raise InvalidFrameError("Invalid ALTSVC frame body.")
 
         self.body_len = len(data)
+
+
+class ExtensionFrame(Frame):
+    """
+    ExtensionFrame is used to wrap frames which are not natively interpretable
+    by hyperframe.
+
+    Although certain byte prefixes are ordained by specification to have
+    certain contextual meanings, frames with other prefixes are not prohibited,
+    and may be used to communicate arbitrary meaning between HTTP/2 peers.
+
+    Thus, hyperframe, rather than raising an exception when such a frame is
+    encountered, wraps it in a generic frame to be properly acted upon by
+    upstream consumers which might have additional context on how to use it.
+
+    .. versionadded:: 5.0.0
+    """
+
+    stream_association = _STREAM_ASSOC_EITHER
+
+    def __init__(self, type, stream_id, **kwargs):
+        super(ExtensionFrame, self).__init__(stream_id, **kwargs)
+        self.type = type
+        self.flag_byte = None
+
+    def parse_flags(self, flag_byte):
+        """
+        For extension frames, we parse the flags by just storing a flag byte.
+        """
+        self.flag_byte = flag_byte
+
+    def parse_body(self, data):
+        self.body = data.tobytes()
+        self.body_len = len(data)
+
+    def serialize(self):
+        """
+        A broad override of the serialize method that ensures that the data
+        comes back out exactly as it came in. This should not be used in most
+        user code: it exists only as a helper method if frames need to be
+        reconstituted.
+        """
+        # Build the frame header.
+        # First, get the flags.
+        flags = self.flag_byte
+
+        header = _STRUCT_HBBBL.pack(
+            (self.body_len >> 8) & 0xFFFF,  # Length spread over top 24 bits
+            self.body_len & 0xFF,
+            self.type,
+            flags,
+            self.stream_id & 0x7FFFFFFF  # Stream ID is 32 bits.
+        )
+
+        return header + self.body
 
 
 _FRAME_CLASSES = [
