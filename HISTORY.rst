@@ -1,6 +1,15 @@
 Release History
 ===============
 
+5.0.0dev0
+---------
+
+**Backwards Incompatible API Changes**
+
+- Added support for unknown extension frames. These will be returned in the new
+  ``ExtensionFrame`` object. The flag information for these frames is persisted
+  in ``flag_byte`` if needed.
+
 4.0.2 (2017-02-20)
 ------------------
 
