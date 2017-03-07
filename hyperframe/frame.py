@@ -778,6 +778,27 @@ class ExtensionFrame(Frame):
         self.body = data.tobytes()
         self.body_len = len(data)
 
+    def serialize(self):
+        """
+        A broad override of the serialize method that ensures that the data
+        comes back out exactly as it came in. This should not be used in most
+        user code: it exists only as a helper method if frames need to be
+        reconstituted.
+        """
+        # Build the frame header.
+        # First, get the flags.
+        flags = self.flag_byte
+
+        header = _STRUCT_HBBBL.pack(
+            (self.body_len >> 8) & 0xFFFF,  # Length spread over top 24 bits
+            self.body_len & 0xFF,
+            self.type,
+            flags,
+            self.stream_id & 0x7FFFFFFF  # Stream ID is 32 bits.
+        )
+
+        return header + self.body
+
 
 _FRAME_CLASSES = [
     DataFrame,

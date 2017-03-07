@@ -1,5 +1,4 @@
 # -*- coding: utf-8 -*-
-from hyperframe.flags import Flag
 from hyperframe.frame import (
     Frame, Flags, DataFrame, PriorityFrame, RstStreamFrame, SettingsFrame,
     PushPromiseFrame, PingFrame, GoAwayFrame, WindowUpdateFrame, HeadersFrame,
@@ -80,6 +79,11 @@ class TestGeneralFrameBehaviour(object):
         assert f.body == b'hello world!'
         assert f.body_len == 12
         assert f.stream_id == 1
+
+    def test_can_round_trip_unknown_frames(self):
+        frame_data = b'\x00\x00\x0C\xFF\x00\x00\x00\x00\x01hello world!'
+        f = decode_frame(frame_data)
+        assert f.serialize() == frame_data
 
     def test_repr(self, monkeypatch):
         f = Frame(stream_id=0)
