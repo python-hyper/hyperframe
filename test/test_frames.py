@@ -1,8 +1,9 @@
 # -*- coding: utf-8 -*-
+from hyperframe.flags import Flag
 from hyperframe.frame import (
     Frame, Flags, DataFrame, PriorityFrame, RstStreamFrame, SettingsFrame,
     PushPromiseFrame, PingFrame, GoAwayFrame, WindowUpdateFrame, HeadersFrame,
-    ContinuationFrame, AltSvcFrame
+    ContinuationFrame, AltSvcFrame, ExtensionFrame
 )
 from hyperframe.exceptions import (
     UnknownFrameError, InvalidPaddingError, InvalidFrameError
@@ -35,10 +36,12 @@ class TestGeneralFrameBehaviour(object):
         with pytest.raises(NotImplementedError):
             f.parse_body(data)
 
-    def test_parse_frame_header_unknown_type(self):
+    def test_parse_frame_header_unknown_type_strict(self):
         with pytest.raises(UnknownFrameError) as excinfo:
-            Frame.parse_frame_header(b'\x00\x00\x59\xFF\x00\x00\x00\x00\x01')
-
+            Frame.parse_frame_header(
+                b'\x00\x00\x59\xFF\x00\x00\x00\x00\x01',
+                strict=True
+            )
         exception = excinfo.value
         assert exception.frame_type == 0xFF
         assert exception.length == 0x59
@@ -52,6 +55,41 @@ class TestGeneralFrameBehaviour(object):
         f, _ = Frame.parse_frame_header(s)
 
         assert f.stream_id == 0
+
+    def test_parse_frame_header_unknown_type(self):
+        f, l = Frame.parse_frame_header(
+            b'\x00\x00\x59\xFF\x00\x00\x00\x00\x01'
+        )
+        assert f.type == 0xFF
+        assert l == 0x59
+        assert isinstance(f, ExtensionFrame)
+        assert f.stream_id == 1
+
+    def test_add_flag_options_later_unknown_type(self):
+        f, l = Frame.parse_frame_header(
+            b'\x00\x00\x59\xFF\x09\x00\x00\x00\x01'
+        )
+        assert f.type == 0xFF
+        assert l == 0x59
+        new_flags = [
+            Flag('FANCY_FLAG', 0x01),
+            Flag('REAL_THING', 0x04),
+            Flag('HUUUUUUGE', 0x08),
+        ]
+        flags = f.assign_flag_mapping(new_flags)
+        assert f.defined_flags == new_flags
+        assert flags
+        assert 'FANCY_FLAG' in flags
+        assert 'REAL_THING' not in flags
+        assert 'HUUUUUUGE' in flags
+
+    def test_parse_body_unknown_type(self):
+        f = decode_frame(
+            b'\x00\x00\x0C\xFF\x00\x00\x00\x00\x01hello world!'
+        )
+        assert f.body == b'hello world!'
+        assert f.body_len == 12
+        assert f.stream_id == 1
 
     def test_repr(self, monkeypatch):
         f = Frame(stream_id=0)
