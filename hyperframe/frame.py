@@ -115,18 +115,13 @@ class Frame(object):
         flags = fields[3]
         stream_id = fields[4] & 0x7FFFFFFF
 
-        if type not in FRAMES:
+        try:
+            frame = FRAMES[type](stream_id)
+        except KeyError:
             if strict:
                 raise UnknownFrameError(type, length)
+            frame = ExtensionFrame(type=type, stream_id=stream_id)
 
-            frame = ExtensionFrame(
-                type=type,
-                flag_byte=flags,
-                stream_id=stream_id,
-            )
-            return (frame, length)
-
-        frame = FRAMES[type](stream_id)
         frame.parse_flags(flags)
         return (frame, length)
 
@@ -768,22 +763,16 @@ class ExtensionFrame(Frame):
 
     stream_association = _STREAM_ASSOC_EITHER
 
-    def __init__(self, type, flag_byte, stream_id, **kwargs):
+    def __init__(self, type, stream_id, **kwargs):
         super(ExtensionFrame, self).__init__(stream_id, **kwargs)
         self.type = type
-        self.flag_byte = flag_byte
+        self.flag_byte = None
 
-    def assign_flag_mapping(self, flags):
+    def parse_flags(self, flag_byte):
         """
-        When initially created, an ExtensionFrame has no concept of what flags
-        might be relevant to it, since a frame's flags are defined in the
-        specification for that frame. This method allows a frame to be assigned
-        a flag mapping after the fact, allowing downstream consumers to modify
-        ExtensionFrame to fit their needs.
+        For extension frames, we parse the flags by just storing a flag byte.
         """
-        self.defined_flags = flags
-        self.flags = Flags(self.defined_flags)
-        return self.parse_flags(self.flag_byte)
+        self.flag_byte = flag_byte
 
     def parse_body(self, data):
         self.body = data.tobytes()

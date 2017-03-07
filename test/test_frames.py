@@ -65,23 +65,13 @@ class TestGeneralFrameBehaviour(object):
         assert isinstance(f, ExtensionFrame)
         assert f.stream_id == 1
 
-    def test_add_flag_options_later_unknown_type(self):
+    def test_flags_are_persisted(self):
         f, l = Frame.parse_frame_header(
             b'\x00\x00\x59\xFF\x09\x00\x00\x00\x01'
         )
         assert f.type == 0xFF
         assert l == 0x59
-        new_flags = [
-            Flag('FANCY_FLAG', 0x01),
-            Flag('REAL_THING', 0x04),
-            Flag('HUUUUUUGE', 0x08),
-        ]
-        flags = f.assign_flag_mapping(new_flags)
-        assert f.defined_flags == new_flags
-        assert flags
-        assert 'FANCY_FLAG' in flags
-        assert 'REAL_THING' not in flags
-        assert 'HUUUUUUGE' in flags
+        assert f.flag_byte == 0x09
 
     def test_parse_body_unknown_type(self):
         f = decode_frame(
