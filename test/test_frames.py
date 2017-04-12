@@ -113,10 +113,14 @@ class TestDataFrame(object):
             'END_STREAM', 'PADDED'
         ])
 
-    def test_data_frame_serializes_properly(self):
+    @pytest.mark.parametrize('data', [
+        b'testdata',
+        memoryview(b'testdata')
+    ])
+    def test_data_frame_serializes_properly(self, data):
         f = DataFrame(1)
         f.flags = set(['END_STREAM'])
-        f.data = b'testdata'
+        f.data = data
 
         s = f.serialize()
         assert s == self.payload

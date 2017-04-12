@@ -270,6 +270,8 @@ class DataFrame(Padding, Frame):
     def serialize_body(self):
         padding_data = self.serialize_padding_data()
         padding = b'\0' * self.total_padding
+        if isinstance(self.data, memoryview):
+            self.data = self.data.tobytes()
         return b''.join([padding_data, self.data, padding])
 
     def parse_body(self, data):

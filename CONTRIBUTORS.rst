@@ -50,3 +50,7 @@ In chronological order:
 
   - Performance improvements to serialization and parsing.
 
+- Fred Thomsen (@fredthomsen)
+
+  - Support for memoryview in DataFrames.
+
