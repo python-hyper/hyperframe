@@ -4,6 +4,9 @@ Release History
 6.0.0dev0
 ---------
 
+5.1.0 (2017-04-24)
+------------------
+
 **API Changes (Backward-compatible)**
 
 - Added support for ``DataFrame.data`` being a ``memoryview`` object.
