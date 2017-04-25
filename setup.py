@@ -36,7 +36,7 @@ setup(
     long_description=open('README.rst').read() + '\n\n' + open('HISTORY.rst').read(),
     author='Cory Benfield',
     author_email='cory@lukasa.co.uk',
-    url='http://hyper.rtfd.org',
+    url='https://python-hyper.org/hyperframe/en/latest/',
     packages=packages,
     package_data={'': ['LICENSE', 'README.rst', 'CONTRIBUTORS.rst', 'HISTORY.rst']},
     package_dir={'hyperframe': 'hyperframe'},
