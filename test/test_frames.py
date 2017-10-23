@@ -56,29 +56,29 @@ class TestGeneralFrameBehaviour(object):
         assert f.stream_id == 0
 
     def test_parse_frame_header_unknown_type(self):
-        f, l = Frame.parse_frame_header(
+        frame, length = Frame.parse_frame_header(
             b'\x00\x00\x59\xFF\x00\x00\x00\x00\x01'
         )
-        assert f.type == 0xFF
-        assert l == 0x59
-        assert isinstance(f, ExtensionFrame)
-        assert f.stream_id == 1
+        assert frame.type == 0xFF
+        assert length == 0x59
+        assert isinstance(frame, ExtensionFrame)
+        assert frame.stream_id == 1
 
     def test_flags_are_persisted(self):
-        f, l = Frame.parse_frame_header(
+        frame, length = Frame.parse_frame_header(
             b'\x00\x00\x59\xFF\x09\x00\x00\x00\x01'
         )
-        assert f.type == 0xFF
-        assert l == 0x59
-        assert f.flag_byte == 0x09
+        assert frame.type == 0xFF
+        assert length == 0x59
+        assert frame.flag_byte == 0x09
 
     def test_parse_body_unknown_type(self):
-        f = decode_frame(
+        frame = decode_frame(
             b'\x00\x00\x0C\xFF\x00\x00\x00\x00\x01hello world!'
         )
-        assert f.body == b'hello world!'
-        assert f.body_len == 12
-        assert f.stream_id == 1
+        assert frame.body == b'hello world!'
+        assert frame.body_len == 12
+        assert frame.stream_id == 1
 
     def test_can_round_trip_unknown_frames(self):
         frame_data = b'\x00\x00\x0C\xFF\x00\x00\x00\x00\x01hello world!'
