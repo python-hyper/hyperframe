@@ -194,7 +194,7 @@ class Padding(object):
     def parse_padding_data(self, data):
         if 'PADDED' in self.flags:
             try:
-                self.pad_length = struct.unpack('!B', data[:1])[0]
+                self.pad_length = _STRUCT_B.unpack(data[:1])[0]
             except struct.error:
                 raise InvalidFrameError("Invalid Padding data")
             return 1
@@ -276,10 +276,10 @@ class DataFrame(Padding, Frame):
 
     def parse_body(self, data):
         padding_data_length = self.parse_padding_data(data)
-        self.data = (
-            data[padding_data_length:len(data)-self.total_padding].tobytes()
-        )
         self.body_len = len(data)
+        self.data = (
+          data[padding_data_length:self.body_len-self.total_padding].tobytes()
+        )
 
         if self.total_padding and self.total_padding >= self.body_len:
             raise InvalidPaddingError("Padding is too long.")
@@ -564,7 +564,7 @@ class GoAwayFrame(Frame):
 
         self.body_len = len(data)
 
-        if len(data) > 8:
+        if self.body_len > 8:
             self.additional_data = data[8:].tobytes()
 
 
@@ -660,7 +660,7 @@ class HeadersFrame(Padding, Priority, Frame):
 
         self.body_len = len(data)
         self.data = (
-            data[priority_data_length:len(data)-self.total_padding].tobytes()
+          data[priority_data_length:self.body_len-self.total_padding].tobytes()
         )
 
         if self.total_padding and self.total_padding >= self.body_len:
