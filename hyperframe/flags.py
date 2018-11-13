@@ -7,11 +7,16 @@ Defines basic Flag and Flags data structures.
 """
 import collections
 
+try:
+    import collections.abc as collections_abc
+except ImportError:
+    import collections as collections_abc
+
 
 Flag = collections.namedtuple("Flag", ["name", "bit"])
 
 
-class Flags(collections.MutableSet):
+class Flags(collections_abc.MutableSet):
     """
     A simple MutableSet implementation that will only accept known flags as
     elements.
