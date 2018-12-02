@@ -12,7 +12,16 @@ install:
   - "pip install ."
   - "pip install -r test_requirements.txt"
   - "pip install flake8"
-before_script: "flake8 --max-complexity 10 hyperframe test"
+
+before_script:
+  - >
+      # Last version of flake8 to support Python 3.3
+      if [[ "$TRAVIS_PYTHON_VERSION" == "3.3" ]]; then
+        pip install flake8==3.5.0
+      fi
+
+      flake8 --max-complexity 10 hyperframe test
+
 script:
   - >
       if [[ $TRAVIS_PYTHON_VERSION == pypy ]]; then
