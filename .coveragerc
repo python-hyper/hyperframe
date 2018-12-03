@@ -12,4 +12,3 @@ exclude_lines =
 source =
     hyperframe/
     .tox/*/lib/python*/site-packages/hyperframe
-    .tox/pypy*/site-packages/hyperframe
