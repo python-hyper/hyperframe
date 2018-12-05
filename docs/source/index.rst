@@ -8,7 +8,7 @@ Working with it is easy:
 
 .. code-block:: python
 
-    import hyperframe
+    import hyperframe.frame
 
     f = hyperframe.frame.DataFrame(stream_id=5)
     f.data = b'some binary data'
@@ -18,8 +18,8 @@ Working with it is easy:
 
     data = f.serialize()
 
-    new_frame = hyperframe.frame.Frame.parse_frame_header(data[:9])
-    new_frame.parse_body(data[9:])
+    new_frame, length = hyperframe.frame.Frame.parse_frame_header(data[:9])
+    new_frame.parse_body(memoryview(data[9:9 + length]))
 
 hyperframe is pure-Python, contains no external dependencies, and runs on a
 wide variety of Python interpreters and platforms. Made available under the MIT
