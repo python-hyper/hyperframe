@@ -24,6 +24,8 @@ matrix:
       env: TOXENV=py37
       dist: xenial
       sudo: true # required workaround for https://github.com/travis-ci/travis-ci/issues/9815
+    - python: "pypy"
+      env: TOXENV=pypy
     - python: "3.7"
       env: TOXENV=lint
       dist: xenial
