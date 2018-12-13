@@ -1,0 +1,14 @@
+[run]
+branch = True
+source = hyperframe
+
+[report]
+fail_under = 100
+show_missing = True
+exclude_lines =
+    pragma: no cover
+
+[paths]
+source =
+    hyperframe/
+    .tox/*/lib/python*/site-packages/hyperframe
