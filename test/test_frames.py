@@ -519,6 +519,19 @@ class TestGoAwayFrame(object):
         assert f.additional_data == b'hello'
         assert f.body_len == 13
 
+        s = (
+            b'\x00\x00\x08\x07\x00\x00\x00\x00\x00' +  # Frame header
+            b'\x00\x00\x00\x40' +                      # Last Stream ID
+            b'\x00\x00\x00\x20' +                      # Error Code
+            b''                                        # Additional data
+        )
+        f = decode_frame(s)
+
+        assert isinstance(f, GoAwayFrame)
+        assert f.flags == set()
+        assert f.additional_data == b''
+        assert f.body_len == 8
+
     def test_goaway_frame_never_has_a_stream(self):
         with pytest.raises(ValueError):
             GoAwayFrame(stream_id=1)

@@ -1,23 +1,40 @@
+sudo: false
 language: python
 
-python:
-  - "2.7"
-  - "3.3"
-  - "3.4"
-  - "3.5"
-  - "3.6"
-  - pypy
+branches:
+  only:
+    - master
+    - /^\d+\.\d+\.X$/
+
+cache:
+  directories:
+    - $HOME/.cache/pip
+
+matrix:
+  include:
+    - python: "2.7"
+      env: TOXENV=py27
+    - python: "3.4"
+      env: TOXENV=py34
+    - python: "3.5"
+      env: TOXENV=py35
+    - python: "3.6"
+      env: TOXENV=py36
+    - python: 3.7
+      env: TOXENV=py37
+      dist: xenial
+      sudo: true # required workaround for https://github.com/travis-ci/travis-ci/issues/9815
+    - python: "pypy"
+      env: TOXENV=pypy
+    - python: "pypy3.5-5.10.1"
+      env: TOXENV=pypy3
+    - python: "3.7"
+      env: TOXENV=lint
+      dist: xenial
+      sudo: true # required workaround for https://github.com/travis-ci/travis-ci/issues/9815
 
 install:
-  - "pip install ."
-  - "pip install -r test_requirements.txt"
-  - "pip install flake8"
-before_script: "flake8 --max-complexity 10 hyperframe test"
+  - "pip install -U pip setuptools"
+  - "pip install -U tox"
 script:
-  - >
-      if [[ $TRAVIS_PYTHON_VERSION == pypy ]]; then
-        py.test test/
-      else
-        py.test -n 4 --cov hyperframe test/
-        coverage report -m --fail-under 100
-      fi
+  - tox
