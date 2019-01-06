@@ -306,13 +306,14 @@ class TestRstStreamFrame(object):
 
 class TestSettingsFrame(object):
     serialized = (
-        b'\x00\x00\x24\x04\x01\x00\x00\x00\x00' +  # Frame header
+        b'\x00\x00\x2A\x04\x01\x00\x00\x00\x00' +  # Frame header
         b'\x00\x01\x00\x00\x10\x00' +              # HEADER_TABLE_SIZE
         b'\x00\x02\x00\x00\x00\x00' +              # ENABLE_PUSH
         b'\x00\x03\x00\x00\x00\x64' +              # MAX_CONCURRENT_STREAMS
         b'\x00\x04\x00\x00\xFF\xFF' +              # INITIAL_WINDOW_SIZE
         b'\x00\x05\x00\x00\x40\x00' +              # MAX_FRAME_SIZE
-        b'\x00\x06\x00\x00\xFF\xFF'                # MAX_HEADER_LIST_SIZE
+        b'\x00\x06\x00\x00\xFF\xFF' +              # MAX_HEADER_LIST_SIZE
+        b'\x00\x08\x00\x00\x00\x01'                # SETTINGS_ENABLE_CONNECT_PROTOCOL # noqa: E501
     )
 
     settings = {
@@ -322,6 +323,7 @@ class TestSettingsFrame(object):
         SettingsFrame.INITIAL_WINDOW_SIZE: 65535,
         SettingsFrame.MAX_FRAME_SIZE: 16384,
         SettingsFrame.MAX_HEADER_LIST_SIZE: 65535,
+        SettingsFrame.SETTINGS_ENABLE_CONNECT_PROTOCOL: 1,
     }
 
     def test_settings_frame_has_only_one_flag(self):
@@ -359,7 +361,7 @@ class TestSettingsFrame(object):
         assert isinstance(f, SettingsFrame)
         assert f.flags == set(['ACK'])
         assert f.settings == self.settings
-        assert f.body_len == 36
+        assert f.body_len == 42
 
     def test_settings_frames_never_have_streams(self):
         with pytest.raises(ValueError):
