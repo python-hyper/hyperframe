@@ -313,7 +313,7 @@ class TestSettingsFrame(object):
         b'\x00\x04\x00\x00\xFF\xFF' +              # INITIAL_WINDOW_SIZE
         b'\x00\x05\x00\x00\x40\x00' +              # MAX_FRAME_SIZE
         b'\x00\x06\x00\x00\xFF\xFF' +              # MAX_HEADER_LIST_SIZE
-        b'\x00\x08\x00\x00\x00\x01'                # SETTINGS_ENABLE_CONNECT_PROTOCOL # noqa: E501
+        b'\x00\x08\x00\x00\x00\x01'                # ENABLE_CONNECT_PROTOCOL
     )
 
     settings = {
@@ -323,7 +323,7 @@ class TestSettingsFrame(object):
         SettingsFrame.INITIAL_WINDOW_SIZE: 65535,
         SettingsFrame.MAX_FRAME_SIZE: 16384,
         SettingsFrame.MAX_HEADER_LIST_SIZE: 65535,
-        SettingsFrame.SETTINGS_ENABLE_CONNECT_PROTOCOL: 1,
+        SettingsFrame.ENABLE_CONNECT_PROTOCOL: 1,
     }
 
     def test_settings_frame_has_only_one_flag(self):
