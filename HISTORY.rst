@@ -4,6 +4,8 @@ Release History
 6.0.0dev0
 ---------
 
+- Added support Python 3.8
+
 5.1.0 (2017-04-24)
 ------------------
 
