@@ -9,7 +9,7 @@ Release History
 
 **API Changes (Backward-compatible)**
 
-- Add a new ENABLE_CONNECT_PROTOCOL settings paramter.
+- Add a new ENABLE_CONNECT_PROTOCOL settings parameter.
 
 **Other Changes**
 

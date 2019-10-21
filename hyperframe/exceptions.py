@@ -9,7 +9,7 @@ Defines the exceptions that can be thrown by hyperframe.
 
 class UnknownFrameError(ValueError):
     """
-    An frame of unknown type was received.
+    A frame of unknown type was received.
     """
     def __init__(self, frame_type, length):
         #: The type byte of the unknown frame that was received.
