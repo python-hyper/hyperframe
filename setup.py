@@ -10,6 +10,12 @@ try:
 except ImportError:
     from distutils.core import setup
 
+
+PROJECT_ROOT = os.path.dirname(__file__)
+
+with open(os.path.join(PROJECT_ROOT, 'README.rst')) as file_:
+    long_description = file_.read()
+
 # Get the version
 version_regex = r'__version__ = ["\']([^"\']*)["\']'
 with open('hyperframe/__init__.py', 'r') as f:
@@ -33,7 +39,7 @@ setup(
     name='hyperframe',
     version=version,
     description='HTTP/2 framing layer for Python',
-    long_description=open('README.rst').read() + '\n\n' + open('HISTORY.rst').read(),
+    long_description=long_description,
     author='Cory Benfield',
     author_email='cory@lukasa.co.uk',
     url='https://python-hyper.org/hyperframe/en/latest/',
@@ -47,13 +53,11 @@ setup(
         'Intended Audience :: Developers',
         'License :: OSI Approved :: MIT License',
         'Programming Language :: Python',
-        'Programming Language :: Python :: 2',
-        'Programming Language :: Python :: 2.7',
         'Programming Language :: Python :: 3',
-        'Programming Language :: Python :: 3.4',
-        'Programming Language :: Python :: 3.5',
         'Programming Language :: Python :: 3.6',
         'Programming Language :: Python :: 3.7',
+        'Programming Language :: Python :: 3.8',
         'Programming Language :: Python :: Implementation :: CPython',
+        'Programming Language :: Python :: Implementation :: PyPy',
     ],
 )
