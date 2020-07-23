@@ -425,6 +425,12 @@ class SettingsFrame(Frame):
                          for setting, value in self.settings.items()])
 
     def parse_body(self, data):
+        if 'ACK' in self.flags and len(data) > 0:
+            raise InvalidFrameError(
+                "SETTINGS ack frame must not have payload: got %s bytes" %
+                len(data)
+            )
+
         body_len = 0
         for i in range(0, len(data), 6):
             try:
