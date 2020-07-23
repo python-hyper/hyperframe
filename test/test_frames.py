@@ -604,9 +604,18 @@ class TestWindowUpdateFrame(object):
 
     def test_short_windowupdate_frame_errors(self):
         s = b'\x00\x00\x04\x08\x00\x00\x00\x00\x00\x00\x00\x02'  # -1 byte
-
         with pytest.raises(InvalidFrameError):
             decode_frame(s)
+
+        s = b'\x00\x00\x05\x08\x00\x00\x00\x00\x00\x00\x00\x00\x00\x02'
+        with pytest.raises(InvalidFrameError):
+            decode_frame(s)
+
+        with pytest.raises(InvalidFrameError):
+            decode_frame(WindowUpdateFrame(0).serialize())
+
+        with pytest.raises(InvalidFrameError):
+            decode_frame(WindowUpdateFrame(2**31).serialize())
 
 
 class TestHeadersFrame(object):

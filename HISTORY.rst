@@ -13,6 +13,8 @@ Release History
 - Fixed padding parsing for ``PushPromiseFrame``.
 - Fixed unchecked frame length for ``PriorityFrame``. It now correctly raises ``InvalidFrameError``.
 - Fixed promised stream id parsing for ``PushPromiseFrame``.
+- Fixed unchecked frame length for ``WindowUpdateFrame``. It now correctly raises ``InvalidFrameError``.
+- Fixed window increment value range validation. It must be 1 <= increment <= 2^31-1.
 
 **Other Changes**
 

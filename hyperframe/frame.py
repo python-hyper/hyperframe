@@ -622,10 +622,21 @@ class WindowUpdateFrame(Frame):
         return _STRUCT_L.pack(self.window_increment & 0x7FFFFFFF)
 
     def parse_body(self, data):
+        if len(data) > 4:
+            raise InvalidFrameError(
+                "WINDOW_UPDATE frame must have 4 byte length: got %s" %
+                len(data)
+            )
+
         try:
             self.window_increment = _STRUCT_L.unpack(data)[0]
         except struct.error:
             raise InvalidFrameError("Invalid WINDOW_UPDATE body")
+
+        if not 1 <= self.window_increment <= 2**31-1:
+            raise InvalidFrameError(
+                "WINDOW_UPDATE increment must be between 1 to 2^31-1"
+            )
 
         self.body_len = 4
 
