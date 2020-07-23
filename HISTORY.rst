@@ -4,6 +4,10 @@ Release History
 6.0.0dev0
 ---------
 
+**Other Changes**
+
+- Drop support for Python 2.7, 3.4, 3.5, pypy and support 3.8.
+
 5.2.0 (2019-01-18)
 ------------------
 
