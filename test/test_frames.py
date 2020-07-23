@@ -437,12 +437,21 @@ class TestPushPromiseFrame(object):
 
     def test_push_promise_frame_with_no_length_parses(self):
         # Fixes issue with empty data frames raising InvalidPaddingError.
-        f = PushPromiseFrame(1)
+        f = PushPromiseFrame(1, 2)
         f.data = b''
         data = f.serialize()
 
         new_frame = decode_frame(data)
         assert new_frame.data == b''
+
+    def test_push_promise_frame_invalid(self):
+        data = PushPromiseFrame(1, 0).serialize()
+        with pytest.raises(InvalidFrameError):
+            decode_frame(data)
+
+        data = PushPromiseFrame(1, 3).serialize()
+        with pytest.raises(InvalidFrameError):
+            decode_frame(data)
 
     def test_short_push_promise_errors(self):
         s = (

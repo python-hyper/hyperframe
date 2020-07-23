@@ -12,6 +12,7 @@ Release History
 
 - Fixed padding parsing for ``PushPromiseFrame``.
 - Fixed unchecked frame length for ``PriorityFrame``. It now correctly raises ``InvalidFrameError``.
+- Fixed promised stream id parsing for ``PushPromiseFrame``.
 
 **Other Changes**
 
