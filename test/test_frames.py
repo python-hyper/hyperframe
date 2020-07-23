@@ -361,13 +361,25 @@ class TestSettingsFrame(object):
         with pytest.raises(ValueError):
             SettingsFrame(settings=self.settings, flags=('ACK',))
 
+        with pytest.raises(ValueError):
+            decode_frame(self.serialized)
+
     def test_settings_frame_parses_properly(self):
-        f = decode_frame(self.serialized)
+        # unset the ACK flag to allow correct parsing
+        data = self.serialized[:4] + b"\x00" + self.serialized[5:]
+
+        f = decode_frame(data)
 
         assert isinstance(f, SettingsFrame)
-        assert f.flags == set(['ACK'])
+        assert f.flags == set()
         assert f.settings == self.settings
         assert f.body_len == 42
+
+    def test_settings_frame_invalid_body_length(self):
+        with pytest.raises(ValueError):
+            decode_frame(
+                b'\x00\x00\x2A\x04\x00\x00\x00\x00\x00\xFF\xFF\xFF\xFF'
+            )
 
     def test_settings_frames_never_have_streams(self):
         with pytest.raises(ValueError):

@@ -15,6 +15,7 @@ Release History
 - Fixed promised stream id parsing for ``PushPromiseFrame``.
 - Fixed unchecked frame length for ``WindowUpdateFrame``. It now correctly raises ``InvalidFrameError``.
 - Fixed window increment value range validation. It must be 1 <= increment <= 2^31-1.
+- Fixed parsing of ``SettingsFrame`` with mutual exclusion of ACK flag and payload.
 
 **Other Changes**
 
