@@ -11,6 +11,7 @@ Release History
 **Bugfixes**
 
 - Fixed padding parsing for ``PushPromiseFrame``.
+- Fixed unchecked frame length for ``PriorityFrame``. It now correctly raises ``InvalidFrameError``.
 
 **Other Changes**
 
