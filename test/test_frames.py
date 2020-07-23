@@ -262,6 +262,12 @@ class TestPriorityFrame(object):
         assert f.exclusive is True
         assert f.body_len == 5
 
+    def test_priority_frame_invalid(self):
+        with pytest.raises(ValueError):
+            decode_frame(
+                b'\x00\x00\x06\x02\x00\x00\x00\x00\x01\x80\x00\x00\x04\x40\xFF'
+            )
+
     def test_priority_frame_comes_on_a_stream(self):
         with pytest.raises(ValueError):
             PriorityFrame(0)

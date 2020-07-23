@@ -323,8 +323,14 @@ class PriorityFrame(Priority, Frame):
         return self.serialize_priority_data()
 
     def parse_body(self, data):
+        if len(data) > 5:
+            raise InvalidFrameError(
+                "PRIORITY must have 5 byte body: actual length %s." %
+                len(data)
+            )
+
         self.parse_priority_data(data)
-        self.body_len = len(data)
+        self.body_len = 5
 
 
 class RstStreamFrame(Frame):
