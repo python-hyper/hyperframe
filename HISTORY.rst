@@ -8,6 +8,10 @@ Release History
 
 - Deprecate ``total_padding`` - use `pad_length` instead.
 
+**Bugfixes**
+
+- Fixed padding parsing for ``PushPromiseFrame``.
+
 **Other Changes**
 
 - Drop support for Python 2.7, 3.4, 3.5, pypy and support 3.8.
