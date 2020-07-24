@@ -4,6 +4,10 @@ Release History
 6.0.0dev0
 ---------
 
+**API Changes (Backward-compatible)**
+
+- Deprecate ``total_padding`` - use `pad_length` instead.
+
 **Other Changes**
 
 - Drop support for Python 2.7, 3.4, 3.5, pypy and support 3.8.
