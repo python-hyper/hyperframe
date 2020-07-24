@@ -474,7 +474,9 @@ class PushPromiseFrame(Padding, Frame):
         except struct.error:
             raise InvalidFrameError("Invalid PUSH_PROMISE body")
 
-        self.data = data[padding_data_length + 4:].tobytes()
+        self.data = (
+            data[padding_data_length + 4:len(data)-self.pad_length].tobytes()
+        )
         self.body_len = len(data)
 
         if self.pad_length and self.pad_length >= self.body_len:

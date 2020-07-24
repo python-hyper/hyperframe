@@ -406,6 +406,21 @@ class TestPushPromiseFrame(object):
         assert f.data == b'hello world'
         assert f.body_len == 15
 
+    def test_push_promise_frame_with_padding(self):
+        s = (
+            b'\x00\x00\x17\x05\x0C\x00\x00\x00\x01' +
+            b'\x07\x00\x00\x00\x04' +
+            b'hello world' +
+            b'padding'
+        )
+        f = decode_frame(s)
+
+        assert isinstance(f, PushPromiseFrame)
+        assert f.flags == set(['END_HEADERS', 'PADDED'])
+        assert f.promised_stream_id == 4
+        assert f.data == b'hello world'
+        assert f.body_len == 23
+
     def test_push_promise_frame_with_invalid_padding_fails_to_parse(self):
         # This frame has a padding length of 6 bytes, but a total length of
         # only 5.
