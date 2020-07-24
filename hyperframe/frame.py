@@ -200,8 +200,15 @@ class Padding(object):
             return 1
         return 0
 
+    #: .. deprecated:: 5.2.1
+    #:    Use self.pad_length instead.
     @property
-    def total_padding(self):
+    def total_padding(self):  # pragma: no cover
+        import warnings
+        warnings.warn(
+            "total_padding contains the same information as pad_length.",
+            DeprecationWarning
+        )
         return self.pad_length
 
 
@@ -269,7 +276,7 @@ class DataFrame(Padding, Frame):
 
     def serialize_body(self):
         padding_data = self.serialize_padding_data()
-        padding = b'\0' * self.total_padding
+        padding = b'\0' * self.pad_length
         if isinstance(self.data, memoryview):
             self.data = self.data.tobytes()
         return b''.join([padding_data, self.data, padding])
@@ -277,11 +284,11 @@ class DataFrame(Padding, Frame):
     def parse_body(self, data):
         padding_data_length = self.parse_padding_data(data)
         self.data = (
-            data[padding_data_length:len(data)-self.total_padding].tobytes()
+            data[padding_data_length:len(data)-self.pad_length].tobytes()
         )
         self.body_len = len(data)
 
-        if self.total_padding and self.total_padding >= self.body_len:
+        if self.pad_length and self.pad_length >= self.body_len:
             raise InvalidPaddingError("Padding is too long.")
 
     @property
@@ -294,7 +301,7 @@ class DataFrame(Padding, Frame):
         if 'PADDED' in self.flags:
             # Account for extra 1-byte padding length field, which is still
             # present if possibly zero-valued.
-            padding_len = self.total_padding + 1
+            padding_len = self.pad_length + 1
         return len(self.data) + padding_len
 
 
@@ -453,7 +460,7 @@ class PushPromiseFrame(Padding, Frame):
 
     def serialize_body(self):
         padding_data = self.serialize_padding_data()
-        padding = b'\0' * self.total_padding
+        padding = b'\0' * self.pad_length
         data = _STRUCT_L.pack(self.promised_stream_id)
         return b''.join([padding_data, data, self.data, padding])
 
@@ -470,7 +477,7 @@ class PushPromiseFrame(Padding, Frame):
         self.data = data[padding_data_length + 4:].tobytes()
         self.body_len = len(data)
 
-        if self.total_padding and self.total_padding >= self.body_len:
+        if self.pad_length and self.pad_length >= self.body_len:
             raise InvalidPaddingError("Padding is too long.")
 
 
@@ -642,7 +649,7 @@ class HeadersFrame(Padding, Priority, Frame):
 
     def serialize_body(self):
         padding_data = self.serialize_padding_data()
-        padding = b'\0' * self.total_padding
+        padding = b'\0' * self.pad_length
 
         if 'PRIORITY' in self.flags:
             priority_data = self.serialize_priority_data()
@@ -662,10 +669,10 @@ class HeadersFrame(Padding, Priority, Frame):
 
         self.body_len = len(data)
         self.data = (
-            data[priority_data_length:len(data)-self.total_padding].tobytes()
+            data[priority_data_length:len(data)-self.pad_length].tobytes()
         )
 
-        if self.total_padding and self.total_padding >= self.body_len:
+        if self.pad_length and self.pad_length >= self.body_len:
             raise InvalidPaddingError("Padding is too long.")
 
 
