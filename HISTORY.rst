@@ -4,6 +4,23 @@ Release History
 6.0.0dev0
 ---------
 
+**API Changes (Backward-compatible)**
+
+- Deprecate ``total_padding`` - use `pad_length` instead.
+
+**Bugfixes**
+
+- Fixed padding parsing for ``PushPromiseFrame``.
+- Fixed unchecked frame length for ``PriorityFrame``. It now correctly raises ``InvalidFrameError``.
+- Fixed promised stream id parsing for ``PushPromiseFrame``.
+- Fixed unchecked frame length for ``WindowUpdateFrame``. It now correctly raises ``InvalidFrameError``.
+- Fixed window increment value range validation. It must be 1 <= increment <= 2^31-1.
+- Fixed parsing of ``SettingsFrame`` with mutual exclusion of ACK flag and payload.
+
+**Other Changes**
+
+- Drop support for Python 2.7, 3.4, 3.5, pypy and support 3.8.
+
 5.2.0 (2019-01-18)
 ------------------
 

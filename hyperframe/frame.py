@@ -200,8 +200,15 @@ class Padding(object):
             return 1
         return 0
 
+    #: .. deprecated:: 5.2.1
+    #:    Use self.pad_length instead.
     @property
-    def total_padding(self):
+    def total_padding(self):  # pragma: no cover
+        import warnings
+        warnings.warn(
+            "total_padding contains the same information as pad_length.",
+            DeprecationWarning
+        )
         return self.pad_length
 
 
@@ -269,7 +276,7 @@ class DataFrame(Padding, Frame):
 
     def serialize_body(self):
         padding_data = self.serialize_padding_data()
-        padding = b'\0' * self.total_padding
+        padding = b'\0' * self.pad_length
         if isinstance(self.data, memoryview):
             self.data = self.data.tobytes()
         return b''.join([padding_data, self.data, padding])
@@ -277,11 +284,11 @@ class DataFrame(Padding, Frame):
     def parse_body(self, data):
         padding_data_length = self.parse_padding_data(data)
         self.data = (
-            data[padding_data_length:len(data)-self.total_padding].tobytes()
+            data[padding_data_length:len(data)-self.pad_length].tobytes()
         )
         self.body_len = len(data)
 
-        if self.total_padding and self.total_padding >= self.body_len:
+        if self.pad_length and self.pad_length >= self.body_len:
             raise InvalidPaddingError("Padding is too long.")
 
     @property
@@ -294,7 +301,7 @@ class DataFrame(Padding, Frame):
         if 'PADDED' in self.flags:
             # Account for extra 1-byte padding length field, which is still
             # present if possibly zero-valued.
-            padding_len = self.total_padding + 1
+            padding_len = self.pad_length + 1
         return len(self.data) + padding_len
 
 
@@ -316,8 +323,14 @@ class PriorityFrame(Priority, Frame):
         return self.serialize_priority_data()
 
     def parse_body(self, data):
+        if len(data) > 5:
+            raise InvalidFrameError(
+                "PRIORITY must have 5 byte body: actual length %s." %
+                len(data)
+            )
+
         self.parse_priority_data(data)
-        self.body_len = len(data)
+        self.body_len = 5
 
 
 class RstStreamFrame(Frame):
@@ -412,6 +425,12 @@ class SettingsFrame(Frame):
                          for setting, value in self.settings.items()])
 
     def parse_body(self, data):
+        if 'ACK' in self.flags and len(data) > 0:
+            raise InvalidFrameError(
+                "SETTINGS ack frame must not have payload: got %s bytes" %
+                len(data)
+            )
+
         body_len = 0
         for i in range(0, len(data), 6):
             try:
@@ -453,7 +472,7 @@ class PushPromiseFrame(Padding, Frame):
 
     def serialize_body(self):
         padding_data = self.serialize_padding_data()
-        padding = b'\0' * self.total_padding
+        padding = b'\0' * self.pad_length
         data = _STRUCT_L.pack(self.promised_stream_id)
         return b''.join([padding_data, data, self.data, padding])
 
@@ -467,10 +486,18 @@ class PushPromiseFrame(Padding, Frame):
         except struct.error:
             raise InvalidFrameError("Invalid PUSH_PROMISE body")
 
-        self.data = data[padding_data_length + 4:].tobytes()
+        self.data = (
+            data[padding_data_length + 4:len(data)-self.pad_length].tobytes()
+        )
         self.body_len = len(data)
 
-        if self.total_padding and self.total_padding >= self.body_len:
+        if self.promised_stream_id == 0 or self.promised_stream_id % 2 != 0:
+            raise InvalidFrameError(
+                "Invalid PUSH_PROMISE promised stream id: %s" %
+                self.promised_stream_id
+            )
+
+        if self.pad_length and self.pad_length >= self.body_len:
             raise InvalidPaddingError("Padding is too long.")
 
 
@@ -601,10 +628,21 @@ class WindowUpdateFrame(Frame):
         return _STRUCT_L.pack(self.window_increment & 0x7FFFFFFF)
 
     def parse_body(self, data):
+        if len(data) > 4:
+            raise InvalidFrameError(
+                "WINDOW_UPDATE frame must have 4 byte length: got %s" %
+                len(data)
+            )
+
         try:
             self.window_increment = _STRUCT_L.unpack(data)[0]
         except struct.error:
             raise InvalidFrameError("Invalid WINDOW_UPDATE body")
+
+        if not 1 <= self.window_increment <= 2**31-1:
+            raise InvalidFrameError(
+                "WINDOW_UPDATE increment must be between 1 to 2^31-1"
+            )
 
         self.body_len = 4
 
@@ -642,7 +680,7 @@ class HeadersFrame(Padding, Priority, Frame):
 
     def serialize_body(self):
         padding_data = self.serialize_padding_data()
-        padding = b'\0' * self.total_padding
+        padding = b'\0' * self.pad_length
 
         if 'PRIORITY' in self.flags:
             priority_data = self.serialize_priority_data()
@@ -662,10 +700,10 @@ class HeadersFrame(Padding, Priority, Frame):
 
         self.body_len = len(data)
         self.data = (
-            data[priority_data_length:len(data)-self.total_padding].tobytes()
+            data[priority_data_length:len(data)-self.pad_length].tobytes()
         )
 
-        if self.total_padding and self.total_padding >= self.body_len:
+        if self.pad_length and self.pad_length >= self.body_len:
             raise InvalidPaddingError("Padding is too long.")
 
 

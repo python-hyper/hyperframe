@@ -262,6 +262,12 @@ class TestPriorityFrame(object):
         assert f.exclusive is True
         assert f.body_len == 5
 
+    def test_priority_frame_invalid(self):
+        with pytest.raises(ValueError):
+            decode_frame(
+                b'\x00\x00\x06\x02\x00\x00\x00\x00\x01\x80\x00\x00\x04\x40\xFF'
+            )
+
     def test_priority_frame_comes_on_a_stream(self):
         with pytest.raises(ValueError):
             PriorityFrame(0)
@@ -355,13 +361,25 @@ class TestSettingsFrame(object):
         with pytest.raises(ValueError):
             SettingsFrame(settings=self.settings, flags=('ACK',))
 
+        with pytest.raises(ValueError):
+            decode_frame(self.serialized)
+
     def test_settings_frame_parses_properly(self):
-        f = decode_frame(self.serialized)
+        # unset the ACK flag to allow correct parsing
+        data = self.serialized[:4] + b"\x00" + self.serialized[5:]
+
+        f = decode_frame(data)
 
         assert isinstance(f, SettingsFrame)
-        assert f.flags == set(['ACK'])
+        assert f.flags == set()
         assert f.settings == self.settings
         assert f.body_len == 42
+
+    def test_settings_frame_invalid_body_length(self):
+        with pytest.raises(ValueError):
+            decode_frame(
+                b'\x00\x00\x2A\x04\x00\x00\x00\x00\x00\xFF\xFF\xFF\xFF'
+            )
 
     def test_settings_frames_never_have_streams(self):
         with pytest.raises(ValueError):
@@ -406,6 +424,21 @@ class TestPushPromiseFrame(object):
         assert f.data == b'hello world'
         assert f.body_len == 15
 
+    def test_push_promise_frame_with_padding(self):
+        s = (
+            b'\x00\x00\x17\x05\x0C\x00\x00\x00\x01' +
+            b'\x07\x00\x00\x00\x04' +
+            b'hello world' +
+            b'padding'
+        )
+        f = decode_frame(s)
+
+        assert isinstance(f, PushPromiseFrame)
+        assert f.flags == set(['END_HEADERS', 'PADDED'])
+        assert f.promised_stream_id == 4
+        assert f.data == b'hello world'
+        assert f.body_len == 23
+
     def test_push_promise_frame_with_invalid_padding_fails_to_parse(self):
         # This frame has a padding length of 6 bytes, but a total length of
         # only 5.
@@ -416,12 +449,21 @@ class TestPushPromiseFrame(object):
 
     def test_push_promise_frame_with_no_length_parses(self):
         # Fixes issue with empty data frames raising InvalidPaddingError.
-        f = PushPromiseFrame(1)
+        f = PushPromiseFrame(1, 2)
         f.data = b''
         data = f.serialize()
 
         new_frame = decode_frame(data)
         assert new_frame.data == b''
+
+    def test_push_promise_frame_invalid(self):
+        data = PushPromiseFrame(1, 0).serialize()
+        with pytest.raises(InvalidFrameError):
+            decode_frame(data)
+
+        data = PushPromiseFrame(1, 3).serialize()
+        with pytest.raises(InvalidFrameError):
+            decode_frame(data)
 
     def test_short_push_promise_errors(self):
         s = (
@@ -574,9 +616,18 @@ class TestWindowUpdateFrame(object):
 
     def test_short_windowupdate_frame_errors(self):
         s = b'\x00\x00\x04\x08\x00\x00\x00\x00\x00\x00\x00\x02'  # -1 byte
-
         with pytest.raises(InvalidFrameError):
             decode_frame(s)
+
+        s = b'\x00\x00\x05\x08\x00\x00\x00\x00\x00\x00\x00\x00\x00\x02'
+        with pytest.raises(InvalidFrameError):
+            decode_frame(s)
+
+        with pytest.raises(InvalidFrameError):
+            decode_frame(WindowUpdateFrame(0).serialize())
+
+        with pytest.raises(InvalidFrameError):
+            decode_frame(WindowUpdateFrame(2**31).serialize())
 
 
 class TestHeadersFrame(object):
