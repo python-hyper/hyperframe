@@ -4,7 +4,10 @@ hyperframe: Pure-Python HTTP/2 framing
 
 .. image:: https://github.com/python-hyper/hyperframe/workflows/CI/badge.svg
     :target: https://github.com/python-hyper/hyperframe/actions
-    :alt: Build status
+    :alt: Build Status
+.. image:: https://codecov.io/gh/python-hyper/hyperframe/branch/master/graph/badge.svg
+    :target: https://codecov.io/gh/python-hyper/hyperframe
+    :alt: Code Coverage
 .. image:: https://readthedocs.org/projects/hyperframe/badge/?version=latest
     :target: https://hyperframe.readthedocs.io/en/latest/
     :alt: Documentation Status
