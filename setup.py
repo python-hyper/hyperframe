@@ -33,8 +33,6 @@ if sys.argv[-1] == 'publish':
     sys.exit()
 
 
-packages = ['hyperframe']
-
 setup(
     name='hyperframe',
     version=version,
@@ -42,10 +40,11 @@ setup(
     long_description=long_description,
     author='Cory Benfield',
     author_email='cory@lukasa.co.uk',
-    url='https://python-hyper.org/hyperframe/en/latest/',
-    packages=packages,
+    url='https://github.com/python-hyper/hyperframe/',
+    packages=['hyperframe'],
     package_data={'': ['LICENSE', 'README.rst', 'CONTRIBUTORS.rst', 'HISTORY.rst']},
     package_dir={'hyperframe': 'hyperframe'},
+    python_requires=">=3.6.1",
     include_package_data=True,
     license='MIT License',
     classifiers=[
