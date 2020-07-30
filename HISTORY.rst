@@ -16,6 +16,13 @@ Release History
 - Fixed unchecked frame length for ``WindowUpdateFrame``. It now correctly raises ``InvalidFrameError``.
 - Fixed window increment value range validation. It must be 1 <= increment <= 2^31-1.
 - Fixed parsing of ``SettingsFrame`` with mutual exclusion of ACK flag and payload.
+- Invalid frames with wrong stream id (zero vs. non-zero) now raise ``InvalidFrameError``, not
+  ``ValueError``. Note that ``InvalidFrameError`` is a ``ValueError`` subclass.
+- Invalid SETTINGS frames (non-empty but ACK) now raise ``InvalidFrameError``, not
+  ``ValueError``. Note that ``InvalidFrameError`` is a ``ValueError`` subclass.
+- Invalid ALTSVC frames with non-bytestring field or origin now raise ``InvalidFrameError``, not
+  ``ValueError``. Note that ``InvalidFrameError`` is a ``ValueError`` subclass.
+
 
 **Other Changes**
 

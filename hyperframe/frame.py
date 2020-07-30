@@ -68,10 +68,10 @@ class Frame(object):
 
         if (not self.stream_id and
            self.stream_association == _STREAM_ASSOC_HAS_STREAM):
-            raise ValueError('Stream ID must be non-zero')
+            raise InvalidFrameError('Stream ID must be non-zero')
         if (self.stream_id and
            self.stream_association == _STREAM_ASSOC_NO_STREAM):
-            raise ValueError('Stream ID must be zero')
+            raise InvalidFrameError('Stream ID must be zero')
 
     def __repr__(self):
         flags = ", ".join(self.flags) or "None"
@@ -415,7 +415,9 @@ class SettingsFrame(Frame):
         super(SettingsFrame, self).__init__(stream_id, **kwargs)
 
         if settings and "ACK" in kwargs.get("flags", ()):
-            raise ValueError("Settings must be empty if ACK flag is set.")
+            raise InvalidFrameError(
+                "Settings must be empty if ACK flag is set."
+            )
 
         #: A dictionary of the setting type byte to the value of the setting.
         self.settings = settings or {}
@@ -762,9 +764,9 @@ class AltSvcFrame(Frame):
         super(AltSvcFrame, self).__init__(stream_id, **kwargs)
 
         if not isinstance(origin, bytes):
-            raise ValueError("AltSvc origin must be bytestring.")
+            raise InvalidFrameError("AltSvc origin must be bytestring.")
         if not isinstance(field, bytes):
-            raise ValueError("AltSvc field must be a bytestring.")
+            raise InvalidFrameError("AltSvc field must be a bytestring.")
         self.origin = origin
         self.field = field
 
