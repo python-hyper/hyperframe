@@ -38,7 +38,7 @@ _STRUCT_H = struct.Struct(">H")
 _STRUCT_B = struct.Struct(">B")
 
 
-class Frame(object):
+class Frame:
     """
     The base class for all HTTP/2 frames.
     """
@@ -175,13 +175,13 @@ class Frame(object):
         raise NotImplementedError()
 
 
-class Padding(object):
+class Padding:
     """
     Mixin for frames that contain padding. Defines extra fields that can be
     used and set by frames that can be padded.
     """
     def __init__(self, stream_id, pad_length=0, **kwargs):
-        super(Padding, self).__init__(stream_id, **kwargs)
+        super().__init__(stream_id, **kwargs)
 
         #: The length of the padding to use.
         self.pad_length = pad_length
@@ -212,7 +212,7 @@ class Padding(object):
         return self.pad_length
 
 
-class Priority(object):
+class Priority:
     """
     Mixin for frames that contain priority data. Defines extra fields that can
     be used and set by frames that contain priority data.
@@ -223,7 +223,7 @@ class Priority(object):
                  stream_weight=0x0,
                  exclusive=False,
                  **kwargs):
-        super(Priority, self).__init__(stream_id, **kwargs)
+        super().__init__(stream_id, **kwargs)
 
         #: The stream ID of the stream on which this stream depends.
         self.depends_on = depends_on
@@ -269,7 +269,7 @@ class DataFrame(Padding, Frame):
     stream_association = _STREAM_ASSOC_HAS_STREAM
 
     def __init__(self, stream_id, data=b'', **kwargs):
-        super(DataFrame, self).__init__(stream_id, **kwargs)
+        super().__init__(stream_id, **kwargs)
 
         #: The data contained on this frame.
         self.data = data
@@ -351,7 +351,7 @@ class RstStreamFrame(Frame):
     stream_association = _STREAM_ASSOC_HAS_STREAM
 
     def __init__(self, stream_id, error_code=0, **kwargs):
-        super(RstStreamFrame, self).__init__(stream_id, **kwargs)
+        super().__init__(stream_id, **kwargs)
 
         #: The error code used when resetting the stream.
         self.error_code = error_code
@@ -412,7 +412,7 @@ class SettingsFrame(Frame):
     ENABLE_CONNECT_PROTOCOL = 0x08
 
     def __init__(self, stream_id=0, settings=None, **kwargs):
-        super(SettingsFrame, self).__init__(stream_id, **kwargs)
+        super().__init__(stream_id, **kwargs)
 
         if settings and "ACK" in kwargs.get("flags", ()):
             raise InvalidFrameError(
@@ -463,7 +463,7 @@ class PushPromiseFrame(Padding, Frame):
     stream_association = _STREAM_ASSOC_HAS_STREAM
 
     def __init__(self, stream_id, promised_stream_id=0, data=b'', **kwargs):
-        super(PushPromiseFrame, self).__init__(stream_id, **kwargs)
+        super().__init__(stream_id, **kwargs)
 
         #: The stream ID that is promised by this frame.
         self.promised_stream_id = promised_stream_id
@@ -518,7 +518,7 @@ class PingFrame(Frame):
     stream_association = _STREAM_ASSOC_NO_STREAM
 
     def __init__(self, stream_id=0, opaque_data=b'', **kwargs):
-        super(PingFrame, self).__init__(stream_id, **kwargs)
+        super().__init__(stream_id, **kwargs)
 
         #: The opaque data sent in this PING frame, as a bytestring.
         self.opaque_data = opaque_data
@@ -565,7 +565,7 @@ class GoAwayFrame(Frame):
                  error_code=0,
                  additional_data=b'',
                  **kwargs):
-        super(GoAwayFrame, self).__init__(stream_id, **kwargs)
+        super().__init__(stream_id, **kwargs)
 
         #: The last stream ID definitely seen by the remote peer.
         self.last_stream_id = last_stream_id
@@ -621,7 +621,7 @@ class WindowUpdateFrame(Frame):
     stream_association = _STREAM_ASSOC_EITHER
 
     def __init__(self, stream_id, window_increment=0, **kwargs):
-        super(WindowUpdateFrame, self).__init__(stream_id, **kwargs)
+        super().__init__(stream_id, **kwargs)
 
         #: The amount the flow control window is to be incremented.
         self.window_increment = window_increment
@@ -675,7 +675,7 @@ class HeadersFrame(Padding, Priority, Frame):
     stream_association = _STREAM_ASSOC_HAS_STREAM
 
     def __init__(self, stream_id, data=b'', **kwargs):
-        super(HeadersFrame, self).__init__(stream_id, **kwargs)
+        super().__init__(stream_id, **kwargs)
 
         #: The HPACK-encoded header block.
         self.data = data
@@ -728,7 +728,7 @@ class ContinuationFrame(Frame):
     stream_association = _STREAM_ASSOC_HAS_STREAM
 
     def __init__(self, stream_id, data=b'', **kwargs):
-        super(ContinuationFrame, self).__init__(stream_id, **kwargs)
+        super().__init__(stream_id, **kwargs)
 
         #: The HPACK-encoded header block.
         self.data = data
@@ -761,7 +761,7 @@ class AltSvcFrame(Frame):
     stream_association = _STREAM_ASSOC_EITHER
 
     def __init__(self, stream_id, origin=b'', field=b'', **kwargs):
-        super(AltSvcFrame, self).__init__(stream_id, **kwargs)
+        super().__init__(stream_id, **kwargs)
 
         if not isinstance(origin, bytes):
             raise InvalidFrameError("AltSvc origin must be bytestring.")
@@ -808,7 +808,7 @@ class ExtensionFrame(Frame):
     stream_association = _STREAM_ASSOC_EITHER
 
     def __init__(self, type, stream_id, **kwargs):
-        super(ExtensionFrame, self).__init__(stream_id, **kwargs)
+        super().__init__(stream_id, **kwargs)
         self.type = type
         self.flag_byte = None
 
