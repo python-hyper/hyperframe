@@ -17,7 +17,7 @@ def decode_frame(frame_data):
     return f
 
 
-class TestGeneralFrameBehaviour(object):
+class TestGeneralFrameBehaviour:
     def test_base_frame_ignores_flags(self):
         f = Frame(stream_id=0)
         flags = f.parse_flags(0xFF)
@@ -100,7 +100,7 @@ class TestGeneralFrameBehaviour(object):
             Frame.parse_frame_header(b'\x00\x00\x08\x00\x01\x00\x00\x00')
 
 
-class TestDataFrame(object):
+class TestDataFrame:
     payload = b'\x00\x00\x08\x00\x01\x00\x00\x00\x01testdata'
     payload_with_padding = (
         b'\x00\x00\x13\x00\x09\x00\x00\x00\x01\x0Atestdata' + b'\0' * 10
@@ -228,7 +228,7 @@ class TestDataFrame(object):
         assert new_frame.data == b''
 
 
-class TestPriorityFrame(object):
+class TestPriorityFrame:
     payload = b'\x00\x00\x05\x02\x00\x00\x00\x00\x01\x80\x00\x00\x04\x40'
 
     def test_priority_frame_has_no_flags(self):
@@ -277,7 +277,7 @@ class TestPriorityFrame(object):
             decode_frame(self.payload[:-2])
 
 
-class TestRstStreamFrame(object):
+class TestRstStreamFrame:
     def test_rst_stream_frame_has_no_flags(self):
         f = RstStreamFrame(1)
         flags = f.parse_flags(0xFF)
@@ -310,7 +310,7 @@ class TestRstStreamFrame(object):
             f.parse_body(b'\x01')
 
 
-class TestSettingsFrame(object):
+class TestSettingsFrame:
     serialized = (
         b'\x00\x00\x2A\x04\x01\x00\x00\x00\x00' +  # Frame header
         b'\x00\x01\x00\x00\x10\x00' +              # HEADER_TABLE_SIZE
@@ -390,7 +390,7 @@ class TestSettingsFrame(object):
             decode_frame(self.serialized[:-2])
 
 
-class TestPushPromiseFrame(object):
+class TestPushPromiseFrame:
     def test_push_promise_frame_flags(self):
         f = PushPromiseFrame(1)
         flags = f.parse_flags(0xFF)
@@ -475,7 +475,7 @@ class TestPushPromiseFrame(object):
             decode_frame(s)
 
 
-class TestPingFrame(object):
+class TestPingFrame:
     def test_ping_frame_has_only_one_flag(self):
         f = PingFrame()
         flags = f.parse_flags(0xFF)
@@ -527,7 +527,7 @@ class TestPingFrame(object):
             f.parse_body(b'\x01\x02\x03\x04\x05\x06\x07')
 
 
-class TestGoAwayFrame(object):
+class TestGoAwayFrame:
     def test_go_away_has_no_flags(self):
         f = GoAwayFrame()
         flags = f.parse_flags(0xFF)
@@ -590,7 +590,7 @@ class TestGoAwayFrame(object):
             decode_frame(s)
 
 
-class TestWindowUpdateFrame(object):
+class TestWindowUpdateFrame:
     def test_window_update_has_no_flags(self):
         f = WindowUpdateFrame(0)
         flags = f.parse_flags(0xFF)
@@ -630,7 +630,7 @@ class TestWindowUpdateFrame(object):
             decode_frame(WindowUpdateFrame(2**31).serialize())
 
 
-class TestHeadersFrame(object):
+class TestHeadersFrame:
     def test_headers_frame_flags(self):
         f = HeadersFrame(1)
         flags = f.parse_flags(0xFF)
@@ -712,7 +712,7 @@ class TestHeadersFrame(object):
         assert new_frame.data == b''
 
 
-class TestContinuationFrame(object):
+class TestContinuationFrame:
     def test_continuation_frame_flags(self):
         f = ContinuationFrame(1)
         flags = f.parse_flags(0xFF)
@@ -740,7 +740,7 @@ class TestContinuationFrame(object):
         assert f.body_len == 11
 
 
-class TestAltSvcFrame(object):
+class TestAltSvcFrame:
     payload_with_origin = (
         b'\x00\x00\x31'  # Length
         b'\x0A'  # Type

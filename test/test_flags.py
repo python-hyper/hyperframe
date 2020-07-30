@@ -5,7 +5,7 @@ from hyperframe.frame import (
 import pytest
 
 
-class TestFlags(object):
+class TestFlags:
     def test_add(self):
         flags = Flags([Flag("VALID_FLAG", 0x00)])
         assert not flags
