@@ -23,10 +23,10 @@ Release History
 - Invalid ALTSVC frames with non-bytestring field or origin now raise ``InvalidFrameError``, not
   ``ValueError``. Note that ``InvalidFrameError`` is a ``ValueError`` subclass.
 
-
 **Other Changes**
 
-- Drop support for Python 2.7, 3.4, 3.5, pypy and support 3.8.
+- Removed support for Python 2.7, 3.4, 3.5, pypy.
+- Added support for Python 3.8.
 
 5.2.0 (2019-01-18)
 ------------------
