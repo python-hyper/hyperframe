@@ -5,11 +5,7 @@ import os
 import re
 import sys
 
-try:
-    from setuptools import setup
-except ImportError:
-    from distutils.core import setup
-
+from setuptools import setup, find_packages
 
 PROJECT_ROOT = os.path.dirname(__file__)
 
@@ -18,8 +14,8 @@ with open(os.path.join(PROJECT_ROOT, 'README.rst')) as file_:
 
 # Get the version
 version_regex = r'__version__ = ["\']([^"\']*)["\']'
-with open('hyperframe/__init__.py', 'r') as f:
-    text = f.read()
+with open(os.path.join(PROJECT_ROOT, 'src/hyperframe/__init__.py')) as file_:
+    text = file_.read()
     match = re.search(version_regex, text)
 
     if match:
@@ -32,19 +28,19 @@ if sys.argv[-1] == 'publish':
     os.system('python setup.py sdist upload')
     sys.exit()
 
-
 setup(
     name='hyperframe',
     version=version,
     description='HTTP/2 framing layer for Python',
     long_description=long_description,
+    long_description_content_type='text/x-rst',
     author='Cory Benfield',
     author_email='cory@lukasa.co.uk',
     url='https://github.com/python-hyper/hyperframe/',
-    packages=['hyperframe'],
-    package_data={'': ['LICENSE', 'README.rst', 'CONTRIBUTORS.rst', 'HISTORY.rst']},
-    package_dir={'hyperframe': 'hyperframe'},
-    python_requires=">=3.6.1",
+    packages=find_packages(where="src"),
+    package_data={'': ['LICENSE', 'README.rst', 'CHANGELOG.rst']},
+    package_dir={'': 'src'},
+    python_requires='>=3.6.1',
     include_package_data=True,
     license='MIT License',
     classifiers=[
