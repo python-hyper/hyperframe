@@ -5,7 +5,7 @@ from hyperframe.frame import (
     ContinuationFrame, AltSvcFrame, ExtensionFrame
 )
 from hyperframe.exceptions import (
-    UnknownFrameError, InvalidPaddingError, InvalidFrameError
+    UnknownFrameError, InvalidPaddingError, InvalidFrameError, InvalidDataError
 )
 import pytest
 
@@ -179,7 +179,7 @@ class TestDataFrame:
         assert f.flow_controlled_length == 8
 
     def test_data_frame_comes_on_a_stream(self):
-        with pytest.raises(InvalidFrameError):
+        with pytest.raises(InvalidDataError):
             DataFrame(0)
 
     def test_long_data_frame(self):
@@ -269,7 +269,7 @@ class TestPriorityFrame:
             )
 
     def test_priority_frame_comes_on_a_stream(self):
-        with pytest.raises(InvalidFrameError):
+        with pytest.raises(InvalidDataError):
             PriorityFrame(0)
 
     def test_short_priority_frame_errors(self):
@@ -301,7 +301,7 @@ class TestRstStreamFrame:
         assert f.body_len == 4
 
     def test_rst_stream_frame_comes_on_a_stream(self):
-        with pytest.raises(InvalidFrameError):
+        with pytest.raises(InvalidDataError):
             RstStreamFrame(0)
 
     def test_rst_stream_frame_must_have_body_length_four(self):
@@ -358,10 +358,10 @@ class TestSettingsFrame:
         assert 'ACK' in f.flags
 
     def test_settings_frame_ack_and_settings(self):
-        with pytest.raises(InvalidFrameError):
+        with pytest.raises(InvalidDataError):
             SettingsFrame(settings=self.settings, flags=('ACK',))
 
-        with pytest.raises(InvalidFrameError):
+        with pytest.raises(InvalidDataError):
             decode_frame(self.serialized)
 
     def test_settings_frame_parses_properly(self):
@@ -382,11 +382,11 @@ class TestSettingsFrame:
             )
 
     def test_settings_frames_never_have_streams(self):
-        with pytest.raises(InvalidFrameError):
+        with pytest.raises(InvalidDataError):
             SettingsFrame(stream_id=1)
 
     def test_short_settings_frame_errors(self):
-        with pytest.raises(InvalidFrameError):
+        with pytest.raises(InvalidDataError):
             decode_frame(self.serialized[:-2])
 
 
@@ -458,11 +458,11 @@ class TestPushPromiseFrame:
 
     def test_push_promise_frame_invalid(self):
         data = PushPromiseFrame(1, 0).serialize()
-        with pytest.raises(InvalidFrameError):
+        with pytest.raises(InvalidDataError):
             decode_frame(data)
 
         data = PushPromiseFrame(1, 3).serialize()
-        with pytest.raises(InvalidFrameError):
+        with pytest.raises(InvalidDataError):
             decode_frame(data)
 
     def test_short_push_promise_errors(self):
@@ -513,7 +513,7 @@ class TestPingFrame:
         assert f.body_len == 8
 
     def test_ping_frame_never_has_a_stream(self):
-        with pytest.raises(InvalidFrameError):
+        with pytest.raises(InvalidDataError):
             PingFrame(stream_id=1)
 
     def test_ping_frame_has_no_more_than_body_length_8(self):
@@ -577,7 +577,7 @@ class TestGoAwayFrame:
         assert f.body_len == 8
 
     def test_goaway_frame_never_has_a_stream(self):
-        with pytest.raises(InvalidFrameError):
+        with pytest.raises(InvalidDataError):
             GoAwayFrame(stream_id=1)
 
     def test_short_goaway_frame_errors(self):
@@ -623,10 +623,10 @@ class TestWindowUpdateFrame:
         with pytest.raises(InvalidFrameError):
             decode_frame(s)
 
-        with pytest.raises(InvalidFrameError):
+        with pytest.raises(InvalidDataError):
             decode_frame(WindowUpdateFrame(0).serialize())
 
-        with pytest.raises(InvalidFrameError):
+        with pytest.raises(InvalidDataError):
             decode_frame(WindowUpdateFrame(2**31).serialize())
 
 
@@ -829,14 +829,14 @@ class TestAltSvcFrame:
             decode_frame(self.payload_with_origin[:10])
 
     def test_altsvc_with_unicode_origin_fails(self):
-        with pytest.raises(InvalidFrameError):
+        with pytest.raises(InvalidDataError):
             AltSvcFrame(
                 stream_id=0, origin=u'hello', field=b'h2=":8000"; ma=60'
 
             )
 
     def test_altsvc_with_unicode_field_fails(self):
-        with pytest.raises(InvalidFrameError):
+        with pytest.raises(InvalidDataError):
             AltSvcFrame(
                 stream_id=0, origin=b'hello', field=u'h2=":8000"; ma=60'
             )

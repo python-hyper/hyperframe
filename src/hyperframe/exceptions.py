@@ -7,9 +7,20 @@ Defines the exceptions that can be thrown by hyperframe.
 """
 
 
-class UnknownFrameError(ValueError):
+class HyperframeError(Exception):
+    """
+    The base class for all exceptions for the hyperframe module.
+
+    .. versionadded:: 6.0.0
+    """
+
+
+class UnknownFrameError(HyperframeError):
     """
     A frame of unknown type was received.
+
+    .. versionchanged:: 6.0.0
+        Changed base class from `ValueError` to :class:`HyperframeError`
     """
     def __init__(self, frame_type, length):
         #: The type byte of the unknown frame that was received.
@@ -25,17 +36,32 @@ class UnknownFrameError(ValueError):
         )
 
 
-class InvalidPaddingError(ValueError):
+class InvalidPaddingError(HyperframeError):
     """
     A frame with invalid padding was received.
+
+    .. versionchanged:: 6.0.0
+        Changed base class from `ValueError` to :class:`HyperframeError`
     """
     pass
 
 
-class InvalidFrameError(ValueError):
+class InvalidFrameError(HyperframeError):
     """
     Parsing a frame failed because the data was not laid out appropriately.
 
     .. versionadded:: 3.0.2
+
+    .. versionchanged:: 6.0.0
+        Changed base class from `ValueError` to :class:`HyperframeError`
+    """
+    pass
+
+
+class InvalidDataError(HyperframeError):
+    """
+    Content or data of a frame was is invalid or violates the specification.
+
+    .. versionadded:: 6.0.0
     """
     pass

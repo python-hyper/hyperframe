@@ -72,6 +72,9 @@ you need is not present!
 Exceptions
 ----------
 
+.. autoclass:: hyperframe.exceptions.HyperframeError
+   :members:
+
 .. autoclass:: hyperframe.exceptions.UnknownFrameError
    :members:
 
@@ -79,4 +82,7 @@ Exceptions
    :members:
 
 .. autoclass:: hyperframe.exceptions.InvalidFrameError
+   :members:
+
+.. autoclass:: hyperframe.exceptions.InvalidDataError
    :members:
