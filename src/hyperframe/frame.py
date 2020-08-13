@@ -11,7 +11,7 @@ import struct
 import binascii
 
 from .exceptions import (
-    UnknownFrameError, InvalidPaddingError, InvalidFrameError
+    UnknownFrameError, InvalidPaddingError, InvalidFrameError, InvalidDataError
 )
 from .flags import Flag, Flags
 
@@ -68,10 +68,10 @@ class Frame:
 
         if (not self.stream_id and
            self.stream_association == _STREAM_ASSOC_HAS_STREAM):
-            raise InvalidFrameError('Stream ID must be non-zero')
+            raise InvalidDataError('Stream ID must be non-zero')
         if (self.stream_id and
            self.stream_association == _STREAM_ASSOC_NO_STREAM):
-            raise InvalidFrameError('Stream ID must be zero')
+            raise InvalidDataError('Stream ID must be zero')
 
     def __repr__(self):
         flags = ", ".join(self.flags) or "None"
@@ -84,7 +84,7 @@ class Frame:
             type=type(self).__name__,
             stream=self.stream_id,
             flags=flags,
-            body=body
+            body=body,
         )
 
     @staticmethod
@@ -94,6 +94,9 @@ class Frame:
         Frame object and the length that needs to be read from the socket.
 
         This populates the flags field, and determines how long the body is.
+
+        :param header: A memoryview object containing the 9-byte frame header
+                       data of a frame. Must not contain more or less.
 
         :param strict: Whether to raise an exception when encountering a frame
             not defined by spec and implemented by hyperframe.
@@ -415,7 +418,7 @@ class SettingsFrame(Frame):
         super().__init__(stream_id, **kwargs)
 
         if settings and "ACK" in kwargs.get("flags", ()):
-            raise InvalidFrameError(
+            raise InvalidDataError(
                 "Settings must be empty if ACK flag is set."
             )
 
@@ -428,7 +431,7 @@ class SettingsFrame(Frame):
 
     def parse_body(self, data):
         if 'ACK' in self.flags and len(data) > 0:
-            raise InvalidFrameError(
+            raise InvalidDataError(
                 "SETTINGS ack frame must not have payload: got %s bytes" %
                 len(data)
             )
@@ -494,7 +497,7 @@ class PushPromiseFrame(Padding, Frame):
         self.body_len = len(data)
 
         if self.promised_stream_id == 0 or self.promised_stream_id % 2 != 0:
-            raise InvalidFrameError(
+            raise InvalidDataError(
                 "Invalid PUSH_PROMISE promised stream id: %s" %
                 self.promised_stream_id
             )
@@ -642,7 +645,7 @@ class WindowUpdateFrame(Frame):
             raise InvalidFrameError("Invalid WINDOW_UPDATE body")
 
         if not 1 <= self.window_increment <= 2**31-1:
-            raise InvalidFrameError(
+            raise InvalidDataError(
                 "WINDOW_UPDATE increment must be between 1 to 2^31-1"
             )
 
@@ -764,9 +767,9 @@ class AltSvcFrame(Frame):
         super().__init__(stream_id, **kwargs)
 
         if not isinstance(origin, bytes):
-            raise InvalidFrameError("AltSvc origin must be bytestring.")
+            raise InvalidDataError("AltSvc origin must be bytestring.")
         if not isinstance(field, bytes):
-            raise InvalidFrameError("AltSvc field must be a bytestring.")
+            raise InvalidDataError("AltSvc field must be a bytestring.")
         self.origin = origin
         self.field = field
 

@@ -4,6 +4,16 @@ Release History
 6.0.0+dev
 ---------
 
+**Backwards Incompatible API Changes**
+
+- Introduce ``HyperframeError`` base exception class for all errors raised within hyperframe.
+- Change exception base class of ``UnknownFrameError`` to ``HyperframeError``
+- Change exception base class of ``InvalidPaddingError`` to ``HyperframeError``
+- Change exception base class of ``InvalidFrameError`` to ``HyperframeError``
+- Invalid frames with wrong stream id (zero vs. non-zero) now raise ``InvalidDataError``.
+- Invalid SETTINGS frames (non-empty but ACK) now raise ``InvalidDataError``.
+- Invalid ALTSVC frames with non-bytestring field or origin now raise ``InvalidDataError``.
+
 **API Changes (Backward-compatible)**
 
 - Deprecate ``total_padding`` - use `pad_length` instead.
@@ -12,16 +22,10 @@ Release History
 
 - Fixed padding parsing for ``PushPromiseFrame``.
 - Fixed unchecked frame length for ``PriorityFrame``. It now correctly raises ``InvalidFrameError``.
-- Fixed promised stream id parsing for ``PushPromiseFrame``.
+- Fixed promised stream id validation for ``PushPromiseFrame``. It now raises ``InvalidDataError``.
 - Fixed unchecked frame length for ``WindowUpdateFrame``. It now correctly raises ``InvalidFrameError``.
-- Fixed window increment value range validation. It must be 1 <= increment <= 2^31-1.
+- Fixed window increment value range validation. It now raises ``InvalidDataError``.
 - Fixed parsing of ``SettingsFrame`` with mutual exclusion of ACK flag and payload.
-- Invalid frames with wrong stream id (zero vs. non-zero) now raise ``InvalidFrameError``, not
-  ``ValueError``. Note that ``InvalidFrameError`` is a ``ValueError`` subclass.
-- Invalid SETTINGS frames (non-empty but ACK) now raise ``InvalidFrameError``, not
-  ``ValueError``. Note that ``InvalidFrameError`` is a ``ValueError`` subclass.
-- Invalid ALTSVC frames with non-bytestring field or origin now raise ``InvalidFrameError``, not
-  ``ValueError``. Note that ``InvalidFrameError`` is a ``ValueError`` subclass.
 
 **Other Changes**
 
