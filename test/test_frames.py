@@ -19,19 +19,19 @@ def decode_frame(frame_data):
 
 class TestGeneralFrameBehaviour:
     def test_base_frame_ignores_flags(self):
-        f = Frame(stream_id=0)
+        f = Frame(0)
         flags = f.parse_flags(0xFF)
         assert not flags
         assert isinstance(flags, Flags)
 
     def test_base_frame_cant_serialize(self):
-        f = Frame(stream_id=0)
+        f = Frame(0)
         with pytest.raises(NotImplementedError):
             f.serialize()
 
     def test_base_frame_cant_parse_body(self):
         data = b''
-        f = Frame(stream_id=0)
+        f = Frame(0)
         with pytest.raises(NotImplementedError):
             f.parse_body(data)
 
@@ -86,14 +86,28 @@ class TestGeneralFrameBehaviour:
         assert f.serialize() == frame_data
 
     def test_repr(self, monkeypatch):
-        f = Frame(stream_id=0)
+        f = Frame(0)
         monkeypatch.setattr(Frame, "serialize_body", lambda _: b"body")
-        assert repr(f) == "Frame(Stream: 0; Flags: None): 626f6479"
+        assert repr(f) == (
+            "Frame(stream_id: 0; flags: None): 626f6479"
+        )
+
+        f.stream_id = 42
+        f.flags = ["END_STREAM", "PADDED"]
+        assert repr(f) == (
+            "Frame(stream_id: 42; flags: END_STREAM, PADDED): 626f6479"
+        )
 
         monkeypatch.setattr(Frame, "serialize_body", lambda _: b"A"*25)
         assert repr(f) == (
-            "Frame(Stream: 0; Flags: None): {}...".format("41"*10)
+            "Frame(stream_id: 42; flags: END_STREAM, PADDED): {}...".format("41"*10)
         )
+
+    def test_frame_explain(self, capsys):
+        d = b'\x00\x00\x08\x00\x01\x00\x00\x00\x01testdata'
+        Frame.explain(memoryview(d))
+        captured = capsys.readouterr()
+        assert captured.out.strip() == "DataFrame(stream_id: 1; flags: END_STREAM): 7465737464617461"
 
     def test_cannot_parse_invalid_frame_header(self):
         with pytest.raises(InvalidFrameError):
@@ -105,6 +119,10 @@ class TestDataFrame:
     payload_with_padding = (
         b'\x00\x00\x13\x00\x09\x00\x00\x00\x01\x0Atestdata' + b'\0' * 10
     )
+
+    def test_repr(self):
+        f = DataFrame(1, b"testdata")
+        assert repr(f).endswith("7465737464617461")
 
     def test_data_frame_has_correct_flags(self):
         f = DataFrame(1)
@@ -231,6 +249,14 @@ class TestDataFrame:
 class TestPriorityFrame:
     payload = b'\x00\x00\x05\x02\x00\x00\x00\x00\x01\x80\x00\x00\x04\x40'
 
+    def test_repr(self):
+        f = PriorityFrame(1)
+        assert repr(f).endswith("exclusive: False, depends_on: 0, stream_weight: 0")
+        f.exclusive = True
+        f.depends_on = 0x04
+        f.stream_weight = 64
+        assert repr(f).endswith("exclusive: True, depends_on: 4, stream_weight: 64")
+
     def test_priority_frame_has_no_flags(self):
         f = PriorityFrame(1)
         flags = f.parse_flags(0xFF)
@@ -278,6 +304,12 @@ class TestPriorityFrame:
 
 
 class TestRstStreamFrame:
+    def test_repr(self):
+        f = RstStreamFrame(1)
+        assert repr(f).endswith("error_code: 0")
+        f.error_code = 420
+        assert repr(f).endswith("error_code: 420")
+
     def test_rst_stream_frame_has_no_flags(self):
         f = RstStreamFrame(1)
         flags = f.parse_flags(0xFF)
@@ -332,6 +364,12 @@ class TestSettingsFrame:
         SettingsFrame.ENABLE_CONNECT_PROTOCOL: 1,
     }
 
+    def test_repr(self):
+        f = SettingsFrame()
+        assert repr(f).endswith("settings: {}")
+        f.settings[SettingsFrame.MAX_FRAME_SIZE] = 16384
+        assert repr(f).endswith("settings: {5: 16384}")
+
     def test_settings_frame_has_only_one_flag(self):
         f = SettingsFrame()
         flags = f.parse_flags(0xFF)
@@ -383,7 +421,7 @@ class TestSettingsFrame:
 
     def test_settings_frames_never_have_streams(self):
         with pytest.raises(InvalidDataError):
-            SettingsFrame(stream_id=1)
+            SettingsFrame(1)
 
     def test_short_settings_frame_errors(self):
         with pytest.raises(InvalidDataError):
@@ -391,6 +429,13 @@ class TestSettingsFrame:
 
 
 class TestPushPromiseFrame:
+    def test_repr(self):
+        f = PushPromiseFrame(1)
+        assert repr(f).endswith("promised_stream_id: 0, data: None")
+        f.promised_stream_id = 4
+        f.data = b"testdata"
+        assert repr(f).endswith("promised_stream_id: 4, data: 7465737464617461")
+
     def test_push_promise_frame_flags(self):
         f = PushPromiseFrame(1)
         flags = f.parse_flags(0xFF)
@@ -476,6 +521,12 @@ class TestPushPromiseFrame:
 
 
 class TestPingFrame:
+    def test_repr(self):
+        f = PingFrame()
+        assert repr(f).endswith("opaque_data: b''")
+        f.opaque_data = b'hello'
+        assert repr(f).endswith("opaque_data: b'hello'")
+
     def test_ping_frame_has_only_one_flag(self):
         f = PingFrame()
         flags = f.parse_flags(0xFF)
@@ -514,7 +565,7 @@ class TestPingFrame:
 
     def test_ping_frame_never_has_a_stream(self):
         with pytest.raises(InvalidDataError):
-            PingFrame(stream_id=1)
+            PingFrame(1)
 
     def test_ping_frame_has_no_more_than_body_length_8(self):
         f = PingFrame()
@@ -528,6 +579,14 @@ class TestPingFrame:
 
 
 class TestGoAwayFrame:
+    def test_repr(self):
+        f = GoAwayFrame()
+        assert repr(f).endswith("last_stream_id: 0, error_code: 0, additional_data: b''")
+        f.last_stream_id = 64
+        f.error_code = 32
+        f.additional_data = b'hello'
+        assert repr(f).endswith("last_stream_id: 64, error_code: 32, additional_data: b'hello'")
+
     def test_go_away_has_no_flags(self):
         f = GoAwayFrame()
         flags = f.parse_flags(0xFF)
@@ -578,7 +637,7 @@ class TestGoAwayFrame:
 
     def test_goaway_frame_never_has_a_stream(self):
         with pytest.raises(InvalidDataError):
-            GoAwayFrame(stream_id=1)
+            GoAwayFrame(1)
 
     def test_short_goaway_frame_errors(self):
         s = (
@@ -591,6 +650,13 @@ class TestGoAwayFrame:
 
 
 class TestWindowUpdateFrame:
+    def test_repr(self):
+        f = WindowUpdateFrame(0)
+        assert repr(f).endswith("window_increment: 0")
+        f.stream_id = 1
+        f.window_increment = 512
+        assert repr(f).endswith("window_increment: 512")
+
     def test_window_update_has_no_flags(self):
         f = WindowUpdateFrame(0)
         flags = f.parse_flags(0xFF)
@@ -631,6 +697,15 @@ class TestWindowUpdateFrame:
 
 
 class TestHeadersFrame:
+    def test_repr(self):
+        f = HeadersFrame(1)
+        assert repr(f).endswith("exclusive: False, depends_on: 0, stream_weight: 0, data: None")
+        f.data = b'hello'
+        f.exclusive = True
+        f.depends_on = 42
+        f.stream_weight = 64
+        assert repr(f).endswith("exclusive: True, depends_on: 42, stream_weight: 64, data: 68656c6c6f")
+
     def test_headers_frame_flags(self):
         f = HeadersFrame(1)
         flags = f.parse_flags(0xFF)
@@ -713,6 +788,12 @@ class TestHeadersFrame:
 
 
 class TestContinuationFrame:
+    def test_repr(self):
+        f = ContinuationFrame(1)
+        assert repr(f).endswith("data: None")
+        f.data = b'hello'
+        assert repr(f).endswith("data: 68656c6c6f")
+
     def test_continuation_frame_flags(self):
         f = ContinuationFrame(1)
         flags = f.parse_flags(0xFF)
@@ -769,14 +850,22 @@ class TestAltSvcFrame:
         b'Alt-Svc: h2=":443"; ma=2592000; persist=1'  # Field Value
     )
 
+    def test_repr(self):
+        f = AltSvcFrame(0)
+        assert repr(f).endswith("origin: b'', field: b''")
+        f.field = b'h2="alt.example.com:8000", h2=":443"'
+        assert repr(f).endswith("origin: b'', field: b'h2=\"alt.example.com:8000\", h2=\":443\"'")
+        f.origin = b'example.com'
+        assert repr(f).endswith("origin: b'example.com', field: b'h2=\"alt.example.com:8000\", h2=\":443\"'")
+
     def test_altsvc_frame_flags(self):
-        f = AltSvcFrame(stream_id=0)
+        f = AltSvcFrame(0)
         flags = f.parse_flags(0xFF)
 
         assert flags == set()
 
     def test_altsvc_frame_with_origin_serializes_properly(self):
-        f = AltSvcFrame(stream_id=0)
+        f = AltSvcFrame(0)
         f.origin = b'example.com'
         f.field = b'h2="alt.example.com:8000", h2=":443"'
 
@@ -793,7 +882,7 @@ class TestAltSvcFrame:
         assert f.stream_id == 0
 
     def test_altsvc_frame_without_origin_serializes_properly(self):
-        f = AltSvcFrame(stream_id=1, origin=b'', field=b'h2=":8000"; ma=60')
+        f = AltSvcFrame(1, origin=b'', field=b'h2=":8000"; ma=60')
         s = f.serialize()
         assert s == self.payload_without_origin
 
@@ -806,16 +895,9 @@ class TestAltSvcFrame:
         assert f.body_len == 19
         assert f.stream_id == 1
 
-    def test_altsvc_frame_without_origin_parses_with_good_repr(self):
-        f = decode_frame(self.payload_without_origin)
-
-        assert repr(f) == (
-            "AltSvcFrame(Stream: 1; Flags: None): 000068323d223a383030..."
-        )
-
     def test_altsvc_frame_with_origin_and_stream_serializes_properly(self):
         # This frame is not valid, but we allow it to be serialized anyway.
-        f = AltSvcFrame(stream_id=1)
+        f = AltSvcFrame(1)
         f.origin = b'example.com'
         f.field = b'Alt-Svc: h2=":443"; ma=2592000; persist=1'
 
@@ -840,3 +922,9 @@ class TestAltSvcFrame:
             AltSvcFrame(
                 stream_id=0, origin=b'hello', field=u'h2=":8000"; ma=60'
             )
+
+
+class TestExtensionFrame:
+    def test_repr(self):
+        f = ExtensionFrame(0xFF, 1, 42, b'hello')
+        assert repr(f).endswith("type: 255, flag_byte: 42, body: 68656c6c6f")
