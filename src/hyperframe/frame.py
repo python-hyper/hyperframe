@@ -68,10 +68,19 @@ class Frame:
 
         if (not self.stream_id and
            self.stream_association == _STREAM_ASSOC_HAS_STREAM):
-            raise InvalidDataError('Stream ID must be non-zero')
+            raise InvalidDataError(
+                'Stream ID must be non-zero for {}'.format(
+                    type(self).__name__,
+                )
+            )
         if (self.stream_id and
            self.stream_association == _STREAM_ASSOC_NO_STREAM):
-            raise InvalidDataError('Stream ID must be zero')
+            raise InvalidDataError(
+                'Stream ID must be zero for {} with stream_id: {}'.format(
+                    type(self).__name__,
+                    self.stream_id,
+                )
+            )
 
     def __repr__(self):
         flags = ", ".join(self.flags) or "None"
