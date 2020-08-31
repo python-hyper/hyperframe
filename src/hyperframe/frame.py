@@ -76,7 +76,7 @@ class Frame:
         if (self.stream_id and
            self.stream_association == _STREAM_ASSOC_NO_STREAM):
             raise InvalidDataError(
-                'Stream ID must be zero for {} with stream_id: {}'.format(
+                'Stream ID must be zero for {} with stream_id={}'.format(
                     type(self).__name__,
                     self.stream_id,
                 )
@@ -84,11 +84,11 @@ class Frame:
 
     def __repr__(self):
         return (
-            "{}(stream_id: {}; flags: {}): {}"
+            "{}(stream_id={}, flags={}): {}"
         ).format(
             type(self).__name__,
             self.stream_id,
-            ", ".join(sorted(self.flags)) or "None",
+            repr(self.flags),
             self._body_repr(),
         )
 
@@ -350,7 +350,7 @@ class PriorityFrame(Priority, Frame):
     stream_association = _STREAM_ASSOC_HAS_STREAM
 
     def _body_repr(self):
-        return "exclusive: {}, depends_on: {}, stream_weight: {}".format(
+        return "exclusive={}, depends_on={}, stream_weight={}".format(
             self.exclusive,
             self.depends_on,
             self.stream_weight
@@ -394,7 +394,7 @@ class RstStreamFrame(Frame):
         self.error_code = error_code
 
     def _body_repr(self):
-        return "error_code: {}".format(
+        return "error_code={}".format(
             self.error_code,
         )
 
@@ -465,7 +465,7 @@ class SettingsFrame(Frame):
         self.settings = settings or {}
 
     def _body_repr(self):
-        return "settings: {}".format(
+        return "settings={}".format(
             self.settings,
         )
 
@@ -520,7 +520,7 @@ class PushPromiseFrame(Padding, Frame):
         self.data = data
 
     def _body_repr(self):
-        return "promised_stream_id: {}, data: {}".format(
+        return "promised_stream_id={}, data={}".format(
             self.promised_stream_id,
             _raw_data_repr(self.data),
         )
@@ -577,7 +577,7 @@ class PingFrame(Frame):
         self.opaque_data = opaque_data
 
     def _body_repr(self):
-        return "opaque_data: {}".format(
+        return "opaque_data={}".format(
             self.opaque_data,
         )
 
@@ -635,7 +635,7 @@ class GoAwayFrame(Frame):
         self.additional_data = additional_data
 
     def _body_repr(self):
-        return "last_stream_id: {}, error_code: {}, additional_data: {}".format(
+        return "last_stream_id={}, error_code={}, additional_data={}".format(
             self.last_stream_id,
             self.error_code,
             self.additional_data,
@@ -692,7 +692,7 @@ class WindowUpdateFrame(Frame):
         self.window_increment = window_increment
 
     def _body_repr(self):
-        return "window_increment: {}".format(
+        return "window_increment={}".format(
             self.window_increment,
         )
 
@@ -751,7 +751,7 @@ class HeadersFrame(Padding, Priority, Frame):
         self.data = data
 
     def _body_repr(self):
-        return "exclusive: {}, depends_on: {}, stream_weight: {}, data: {}".format(
+        return "exclusive={}, depends_on={}, stream_weight={}, data={}".format(
             self.exclusive,
             self.depends_on,
             self.stream_weight,
@@ -812,7 +812,7 @@ class ContinuationFrame(Frame):
         self.data = data
 
     def _body_repr(self):
-        return "data: {}".format(
+        return "data={}".format(
             _raw_data_repr(self.data),
         )
 
@@ -854,7 +854,7 @@ class AltSvcFrame(Frame):
         self.field = field
 
     def _body_repr(self):
-        return "origin: {}, field: {}".format(
+        return "origin={}, field={}".format(
             self.origin,
             self.field,
         )
@@ -903,7 +903,7 @@ class ExtensionFrame(Frame):
         self.body = body
 
     def _body_repr(self):
-        return "type: {}, flag_byte: {}, body: {}".format(
+        return "type={}, flag_byte={}, body={}".format(
             self.type,
             self.flag_byte,
             _raw_data_repr(self.body),
@@ -947,7 +947,7 @@ def _raw_data_repr(data):
     r = binascii.hexlify(data).decode('ascii')
     if len(r) > 20:
         r = r[:20] + "..."
-    return r
+    return "<hex:" + r + ">"
 
 
 _FRAME_CLASSES = [
