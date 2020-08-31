@@ -89,25 +89,25 @@ class TestGeneralFrameBehaviour:
         f = Frame(0)
         monkeypatch.setattr(Frame, "serialize_body", lambda _: b"body")
         assert repr(f) == (
-            "Frame(stream_id: 0; flags: None): 626f6479"
+            "Frame(stream_id=0, flags=[]): <hex:626f6479>"
         )
 
         f.stream_id = 42
         f.flags = ["END_STREAM", "PADDED"]
         assert repr(f) == (
-            "Frame(stream_id: 42; flags: END_STREAM, PADDED): 626f6479"
+            "Frame(stream_id=42, flags=['END_STREAM', 'PADDED']): <hex:626f6479>"
         )
 
         monkeypatch.setattr(Frame, "serialize_body", lambda _: b"A"*25)
         assert repr(f) == (
-            "Frame(stream_id: 42; flags: END_STREAM, PADDED): {}...".format("41"*10)
+            "Frame(stream_id=42, flags=['END_STREAM', 'PADDED']): <hex:{}...>".format("41"*10)
         )
 
     def test_frame_explain(self, capsys):
         d = b'\x00\x00\x08\x00\x01\x00\x00\x00\x01testdata'
         Frame.explain(memoryview(d))
         captured = capsys.readouterr()
-        assert captured.out.strip() == "DataFrame(stream_id: 1; flags: END_STREAM): 7465737464617461"
+        assert captured.out.strip() == "DataFrame(stream_id=1, flags=['END_STREAM']): <hex:7465737464617461>"
 
     def test_cannot_parse_invalid_frame_header(self):
         with pytest.raises(InvalidFrameError):
@@ -122,7 +122,7 @@ class TestDataFrame:
 
     def test_repr(self):
         f = DataFrame(1, b"testdata")
-        assert repr(f).endswith("7465737464617461")
+        assert repr(f).endswith("<hex:7465737464617461>")
 
     def test_data_frame_has_correct_flags(self):
         f = DataFrame(1)
@@ -251,11 +251,11 @@ class TestPriorityFrame:
 
     def test_repr(self):
         f = PriorityFrame(1)
-        assert repr(f).endswith("exclusive: False, depends_on: 0, stream_weight: 0")
+        assert repr(f).endswith("exclusive=False, depends_on=0, stream_weight=0")
         f.exclusive = True
         f.depends_on = 0x04
         f.stream_weight = 64
-        assert repr(f).endswith("exclusive: True, depends_on: 4, stream_weight: 64")
+        assert repr(f).endswith("exclusive=True, depends_on=4, stream_weight=64")
 
     def test_priority_frame_has_no_flags(self):
         f = PriorityFrame(1)
@@ -306,9 +306,9 @@ class TestPriorityFrame:
 class TestRstStreamFrame:
     def test_repr(self):
         f = RstStreamFrame(1)
-        assert repr(f).endswith("error_code: 0")
+        assert repr(f).endswith("error_code=0")
         f.error_code = 420
-        assert repr(f).endswith("error_code: 420")
+        assert repr(f).endswith("error_code=420")
 
     def test_rst_stream_frame_has_no_flags(self):
         f = RstStreamFrame(1)
@@ -366,9 +366,9 @@ class TestSettingsFrame:
 
     def test_repr(self):
         f = SettingsFrame()
-        assert repr(f).endswith("settings: {}")
+        assert repr(f).endswith("settings={}")
         f.settings[SettingsFrame.MAX_FRAME_SIZE] = 16384
-        assert repr(f).endswith("settings: {5: 16384}")
+        assert repr(f).endswith("settings={5: 16384}")
 
     def test_settings_frame_has_only_one_flag(self):
         f = SettingsFrame()
@@ -431,10 +431,10 @@ class TestSettingsFrame:
 class TestPushPromiseFrame:
     def test_repr(self):
         f = PushPromiseFrame(1)
-        assert repr(f).endswith("promised_stream_id: 0, data: None")
+        assert repr(f).endswith("promised_stream_id=0, data=None")
         f.promised_stream_id = 4
         f.data = b"testdata"
-        assert repr(f).endswith("promised_stream_id: 4, data: 7465737464617461")
+        assert repr(f).endswith("promised_stream_id=4, data=<hex:7465737464617461>")
 
     def test_push_promise_frame_flags(self):
         f = PushPromiseFrame(1)
@@ -523,9 +523,9 @@ class TestPushPromiseFrame:
 class TestPingFrame:
     def test_repr(self):
         f = PingFrame()
-        assert repr(f).endswith("opaque_data: b''")
+        assert repr(f).endswith("opaque_data=b''")
         f.opaque_data = b'hello'
-        assert repr(f).endswith("opaque_data: b'hello'")
+        assert repr(f).endswith("opaque_data=b'hello'")
 
     def test_ping_frame_has_only_one_flag(self):
         f = PingFrame()
@@ -581,11 +581,11 @@ class TestPingFrame:
 class TestGoAwayFrame:
     def test_repr(self):
         f = GoAwayFrame()
-        assert repr(f).endswith("last_stream_id: 0, error_code: 0, additional_data: b''")
+        assert repr(f).endswith("last_stream_id=0, error_code=0, additional_data=b''")
         f.last_stream_id = 64
         f.error_code = 32
         f.additional_data = b'hello'
-        assert repr(f).endswith("last_stream_id: 64, error_code: 32, additional_data: b'hello'")
+        assert repr(f).endswith("last_stream_id=64, error_code=32, additional_data=b'hello'")
 
     def test_go_away_has_no_flags(self):
         f = GoAwayFrame()
@@ -652,10 +652,10 @@ class TestGoAwayFrame:
 class TestWindowUpdateFrame:
     def test_repr(self):
         f = WindowUpdateFrame(0)
-        assert repr(f).endswith("window_increment: 0")
+        assert repr(f).endswith("window_increment=0")
         f.stream_id = 1
         f.window_increment = 512
-        assert repr(f).endswith("window_increment: 512")
+        assert repr(f).endswith("window_increment=512")
 
     def test_window_update_has_no_flags(self):
         f = WindowUpdateFrame(0)
@@ -699,12 +699,12 @@ class TestWindowUpdateFrame:
 class TestHeadersFrame:
     def test_repr(self):
         f = HeadersFrame(1)
-        assert repr(f).endswith("exclusive: False, depends_on: 0, stream_weight: 0, data: None")
+        assert repr(f).endswith("exclusive=False, depends_on=0, stream_weight=0, data=None")
         f.data = b'hello'
         f.exclusive = True
         f.depends_on = 42
         f.stream_weight = 64
-        assert repr(f).endswith("exclusive: True, depends_on: 42, stream_weight: 64, data: 68656c6c6f")
+        assert repr(f).endswith("exclusive=True, depends_on=42, stream_weight=64, data=<hex:68656c6c6f>")
 
     def test_headers_frame_flags(self):
         f = HeadersFrame(1)
@@ -790,9 +790,9 @@ class TestHeadersFrame:
 class TestContinuationFrame:
     def test_repr(self):
         f = ContinuationFrame(1)
-        assert repr(f).endswith("data: None")
+        assert repr(f).endswith("data=None")
         f.data = b'hello'
-        assert repr(f).endswith("data: 68656c6c6f")
+        assert repr(f).endswith("data=<hex:68656c6c6f>")
 
     def test_continuation_frame_flags(self):
         f = ContinuationFrame(1)
@@ -852,11 +852,11 @@ class TestAltSvcFrame:
 
     def test_repr(self):
         f = AltSvcFrame(0)
-        assert repr(f).endswith("origin: b'', field: b''")
+        assert repr(f).endswith("origin=b'', field=b''")
         f.field = b'h2="alt.example.com:8000", h2=":443"'
-        assert repr(f).endswith("origin: b'', field: b'h2=\"alt.example.com:8000\", h2=\":443\"'")
+        assert repr(f).endswith("origin=b'', field=b'h2=\"alt.example.com:8000\", h2=\":443\"'")
         f.origin = b'example.com'
-        assert repr(f).endswith("origin: b'example.com', field: b'h2=\"alt.example.com:8000\", h2=\":443\"'")
+        assert repr(f).endswith("origin=b'example.com', field=b'h2=\"alt.example.com:8000\", h2=\":443\"'")
 
     def test_altsvc_frame_flags(self):
         f = AltSvcFrame(0)
@@ -927,4 +927,4 @@ class TestAltSvcFrame:
 class TestExtensionFrame:
     def test_repr(self):
         f = ExtensionFrame(0xFF, 1, 42, b'hello')
-        assert repr(f).endswith("type: 255, flag_byte: 42, body: 68656c6c6f")
+        assert repr(f).endswith("type=255, flag_byte=42, body=<hex:68656c6c6f>")
