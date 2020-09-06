@@ -17,6 +17,8 @@ Release History
 **API Changes (Backward-compatible)**
 
 - Deprecate ``total_padding`` - use `pad_length` instead.
+- Improve repr() output for all frame classes.
+- Introduce Frame.explain(data) for quick introspection of raw data.
 
 **Bugfixes**
 

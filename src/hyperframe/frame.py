@@ -68,24 +68,51 @@ class Frame:
 
         if (not self.stream_id and
            self.stream_association == _STREAM_ASSOC_HAS_STREAM):
-            raise InvalidDataError('Stream ID must be non-zero')
+            raise InvalidDataError(
+                'Stream ID must be non-zero for {}'.format(
+                    type(self).__name__,
+                )
+            )
         if (self.stream_id and
            self.stream_association == _STREAM_ASSOC_NO_STREAM):
-            raise InvalidDataError('Stream ID must be zero')
+            raise InvalidDataError(
+                'Stream ID must be zero for {} with stream_id={}'.format(
+                    type(self).__name__,
+                    self.stream_id,
+                )
+            )
 
     def __repr__(self):
-        flags = ", ".join(self.flags) or "None"
-        body = binascii.hexlify(self.serialize_body()).decode('ascii')
-        if len(body) > 20:
-            body = body[:20] + "..."
         return (
-            "{type}(Stream: {stream}; Flags: {flags}): {body}"
+            "{}(stream_id={}, flags={}): {}"
         ).format(
-            type=type(self).__name__,
-            stream=self.stream_id,
-            flags=flags,
-            body=body,
+            type(self).__name__,
+            self.stream_id,
+            repr(self.flags),
+            self._body_repr(),
         )
+
+    def _body_repr(self):
+        # More specific implementation may be provided by subclasses of Frame.
+        # This fallback shows the serialized (and truncated) body content.
+        return _raw_data_repr(self.serialize_body())
+
+    @staticmethod
+    def explain(data):
+        """
+        Takes a bytestring and tries to parse a single frame and print it.
+
+        This function is only provided for debugging purposes.
+
+        :param data: A memoryview object containing the raw data of at least
+                     one complete frame (header and body).
+
+        .. versionadded:: 6.0.0
+        """
+        frame, length = Frame.parse_frame_header(data[:9])
+        frame.parse_body(data[9:9 + length])
+        print(frame)
+        return frame, length
 
     @staticmethod
     def parse_frame_header(header, strict=False):
@@ -322,6 +349,13 @@ class PriorityFrame(Priority, Frame):
 
     stream_association = _STREAM_ASSOC_HAS_STREAM
 
+    def _body_repr(self):
+        return "exclusive={}, depends_on={}, stream_weight={}".format(
+            self.exclusive,
+            self.depends_on,
+            self.stream_weight
+        )
+
     def serialize_body(self):
         return self.serialize_priority_data()
 
@@ -358,6 +392,11 @@ class RstStreamFrame(Frame):
 
         #: The error code used when resetting the stream.
         self.error_code = error_code
+
+    def _body_repr(self):
+        return "error_code={}".format(
+            self.error_code,
+        )
 
     def serialize_body(self):
         return _STRUCT_L.pack(self.error_code)
@@ -425,6 +464,11 @@ class SettingsFrame(Frame):
         #: A dictionary of the setting type byte to the value of the setting.
         self.settings = settings or {}
 
+    def _body_repr(self):
+        return "settings={}".format(
+            self.settings,
+        )
+
     def serialize_body(self):
         return b''.join([_STRUCT_HL.pack(setting & 0xFF, value)
                          for setting, value in self.settings.items()])
@@ -474,6 +518,12 @@ class PushPromiseFrame(Padding, Frame):
         #: The HPACK-encoded header block for the simulated request on the new
         #: stream.
         self.data = data
+
+    def _body_repr(self):
+        return "promised_stream_id={}, data={}".format(
+            self.promised_stream_id,
+            _raw_data_repr(self.data),
+        )
 
     def serialize_body(self):
         padding_data = self.serialize_padding_data()
@@ -525,6 +575,11 @@ class PingFrame(Frame):
 
         #: The opaque data sent in this PING frame, as a bytestring.
         self.opaque_data = opaque_data
+
+    def _body_repr(self):
+        return "opaque_data={}".format(
+            self.opaque_data,
+        )
 
     def serialize_body(self):
         if len(self.opaque_data) > 8:
@@ -579,6 +634,13 @@ class GoAwayFrame(Frame):
         #: Any additional data sent in the GOAWAY.
         self.additional_data = additional_data
 
+    def _body_repr(self):
+        return "last_stream_id={}, error_code={}, additional_data={}".format(
+            self.last_stream_id,
+            self.error_code,
+            self.additional_data,
+        )
+
     def serialize_body(self):
         data = _STRUCT_LL.pack(
             self.last_stream_id & 0x7FFFFFFF,
@@ -628,6 +690,11 @@ class WindowUpdateFrame(Frame):
 
         #: The amount the flow control window is to be incremented.
         self.window_increment = window_increment
+
+    def _body_repr(self):
+        return "window_increment={}".format(
+            self.window_increment,
+        )
 
     def serialize_body(self):
         return _STRUCT_L.pack(self.window_increment & 0x7FFFFFFF)
@@ -683,6 +750,14 @@ class HeadersFrame(Padding, Priority, Frame):
         #: The HPACK-encoded header block.
         self.data = data
 
+    def _body_repr(self):
+        return "exclusive={}, depends_on={}, stream_weight={}, data={}".format(
+            self.exclusive,
+            self.depends_on,
+            self.stream_weight,
+            _raw_data_repr(self.data),
+        )
+
     def serialize_body(self):
         padding_data = self.serialize_padding_data()
         padding = b'\0' * self.pad_length
@@ -736,6 +811,11 @@ class ContinuationFrame(Frame):
         #: The HPACK-encoded header block.
         self.data = data
 
+    def _body_repr(self):
+        return "data={}".format(
+            _raw_data_repr(self.data),
+        )
+
     def serialize_body(self):
         return self.data
 
@@ -772,6 +852,12 @@ class AltSvcFrame(Frame):
             raise InvalidDataError("AltSvc field must be a bytestring.")
         self.origin = origin
         self.field = field
+
+    def _body_repr(self):
+        return "origin={}, field={}".format(
+            self.origin,
+            self.field,
+        )
 
     def serialize_body(self):
         origin_len = _STRUCT_H.pack(len(self.origin))
@@ -810,10 +896,18 @@ class ExtensionFrame(Frame):
 
     stream_association = _STREAM_ASSOC_EITHER
 
-    def __init__(self, type, stream_id, **kwargs):
+    def __init__(self, type, stream_id, flag_byte=0x0, body=b'', **kwargs):
         super().__init__(stream_id, **kwargs)
         self.type = type
-        self.flag_byte = None
+        self.flag_byte = flag_byte
+        self.body = body
+
+    def _body_repr(self):
+        return "type={}, flag_byte={}, body={}".format(
+            self.type,
+            self.flag_byte,
+            _raw_data_repr(self.body),
+        )
 
     def parse_flags(self, flag_byte):
         """
@@ -845,6 +939,15 @@ class ExtensionFrame(Frame):
         )
 
         return header + self.body
+
+
+def _raw_data_repr(data):
+    if not data:
+        return "None"
+    r = binascii.hexlify(data).decode('ascii')
+    if len(r) > 20:
+        r = r[:20] + "..."
+    return "<hex:" + r + ">"
 
 
 _FRAME_CLASSES = [

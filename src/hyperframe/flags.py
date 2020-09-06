@@ -23,6 +23,9 @@ class Flags(MutableSet):
         self._valid_flags = set(flag.name for flag in defined_flags)
         self._flags = set()
 
+    def __repr__(self):
+        return repr(sorted(list(self._flags)))
+
     def __contains__(self, x):
         return self._flags.__contains__(x)
 
