@@ -1,8 +1,20 @@
 Release History
 ===============
 
+dev
+---
+
+**API Changes (Backward Incompatible)**
+
+-
+
+**Bugfixes**
+
+-
+
+
 6.0.0 (2020-09-06)
----------
+------------------
 
 **API Changes (Backward-incompatible)**
 
