@@ -27,7 +27,7 @@ with open(os.path.join(PROJECT_ROOT, '../../', 'src/hyperframe/__init__.py')) as
 
 # -- Project information -----------------------------------------------------
 
-project = 'hpack'
+project = 'hyperframe'
 copyright = '2020, Cory Benfield'
 author = 'Cory Benfield'
 release = version

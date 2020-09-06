@@ -1,10 +1,10 @@
 Release History
 ===============
 
-6.0.0+dev
+6.0.0 (2020-09-06)
 ---------
 
-**Backwards Incompatible API Changes**
+**API Changes (Backward-incompatible)**
 
 - Introduce ``HyperframeError`` base exception class for all errors raised within hyperframe.
 - Change exception base class of ``UnknownFrameError`` to ``HyperframeError``
