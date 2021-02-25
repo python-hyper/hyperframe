@@ -6,7 +6,7 @@ dev
 
 **API Changes (Backward Incompatible)**
 
--
+- Added type hints.
 
 **Bugfixes**
 
