@@ -8,6 +8,10 @@ dev
 
 -
 
+**API Changes (Backward-compatible)**
+
+- Added type hints.
+
 **Bugfixes**
 
 -
