@@ -14,7 +14,7 @@ class Flag(NamedTuple):
     bit: int
 
 
-class Flags(MutableSet[str]):
+class Flags(MutableSet):  # type: ignore
     """
     A simple MutableSet implementation that will only accept known flags as
     elements.

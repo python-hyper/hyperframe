@@ -6,6 +6,10 @@ dev
 
 **API Changes (Backward Incompatible)**
 
+-
+
+**API Changes (Backward-compatible)**
+
 - Added type hints.
 
 **Bugfixes**
