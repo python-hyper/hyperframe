@@ -33,7 +33,7 @@ setup(
     author_email='cory@lukasa.co.uk',
     url='https://github.com/python-hyper/hyperframe/',
     packages=find_packages(where="src"),
-    package_data={'': ['LICENSE', 'README.rst', 'CHANGELOG.rst']},
+    package_data={'': ['LICENSE', 'README.rst', 'CHANGELOG.rst'], "hyperframe": ["py.typed"]},
     package_dir={'': 'src'},
     python_requires='>=3.6.1',
     include_package_data=True,
