@@ -1,6 +1,21 @@
 Release History
 ===============
 
+dev
+---
+
+**API Changes (Backward Incompatible)**
+
+-
+
+**API Changes (Backward-compatible)**
+
+-
+
+**Bugfixes**
+
+-
+
 6.0.1 (2021-04-17)
 ------------------
 
