@@ -1,21 +1,13 @@
 Release History
 ===============
 
-dev
----
-
-**API Changes (Backward Incompatible)**
-
--
+6.0.1 (2021-04-17)
+------------------
 
 **API Changes (Backward-compatible)**
 
+- Added support for Python 3.9.
 - Added type hints.
-
-**Bugfixes**
-
--
-
 
 6.0.0 (2020-09-06)
 ------------------
