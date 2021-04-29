@@ -8,3 +8,5 @@ __pycache__
 coverage.xml
 .tox/
 .cache/
+
+src/hyperframe/version.py
