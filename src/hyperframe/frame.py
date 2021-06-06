@@ -133,7 +133,7 @@ class Frame:
             type is received.
 
         .. versionchanged:: 5.0.0
-            Added :param:`strict` to accommodate :class:`ExtensionFrame`
+            Added ``strict`` parameter to accommodate :class:`ExtensionFrame`
         """
         try:
             fields = _STRUCT_HBBBL.unpack(header)
