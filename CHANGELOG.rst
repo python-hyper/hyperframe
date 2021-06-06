@@ -8,7 +8,7 @@ dev
 
 -
 
-**API Changes (Backward-compatible)**
+**API Changes (Backward Compatible)**
 
 -
 
@@ -19,7 +19,7 @@ dev
 6.0.1 (2021-04-17)
 ------------------
 
-**API Changes (Backward-compatible)**
+**API Changes (Backward Compatible)**
 
 - Added support for Python 3.9.
 - Added type hints.
@@ -27,7 +27,7 @@ dev
 6.0.0 (2020-09-06)
 ------------------
 
-**API Changes (Backward-incompatible)**
+**API Changes (Backward Incompatible)**
 
 - Introduce ``HyperframeError`` base exception class for all errors raised within hyperframe.
 - Change exception base class of ``UnknownFrameError`` to ``HyperframeError``
@@ -37,7 +37,7 @@ dev
 - Invalid SETTINGS frames (non-empty but ACK) now raise ``InvalidDataError``.
 - Invalid ALTSVC frames with non-bytestring field or origin now raise ``InvalidDataError``.
 
-**API Changes (Backward-compatible)**
+**API Changes (Backward Compatible)**
 
 - Deprecate ``total_padding`` - use `pad_length` instead.
 - Improve repr() output for all frame classes.
@@ -60,7 +60,7 @@ dev
 5.2.0 (2019-01-18)
 ------------------
 
-**API Changes (Backward-compatible)**
+**API Changes (Backward Compatible)**
 
 - Add a new ENABLE_CONNECT_PROTOCOL settings parameter.
 
@@ -72,7 +72,7 @@ dev
 5.1.0 (2017-04-24)
 ------------------
 
-**API Changes (Backward-compatible)**
+**API Changes (Backward Compatible)**
 
 - Added support for ``DataFrame.data`` being a ``memoryview`` object.
 
@@ -119,7 +119,7 @@ dev
 3.2.0 (2016-02-02)
 ------------------
 
-**API Changes (Backward-compatible)**
+**API Changes (Backward Compatible)**
 
 - Invalid PING frame bodies now raise ``InvalidFrameError``, not
   ``ValueError``. Note that ``InvalidFrameError`` is a ``ValueError`` subclass.
