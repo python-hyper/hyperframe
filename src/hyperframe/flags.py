@@ -22,7 +22,7 @@ class Flags(MutableSet):  # type: ignore
     Will behave like a regular set(), except that a ValueError will be thrown
     when .add()ing unexpected flags.
     """
-    def __init__(self, defined_flags: Iterable[Flag]):
+    def __init__(self, defined_flags: Iterable[Flag]) -> None:
         self._valid_flags = set(flag.name for flag in defined_flags)
         self._flags: Set[str] = set()
 
