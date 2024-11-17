@@ -1,4 +1,3 @@
-# -*- coding: utf-8 -*-
 """
 hyperframe/frame
 ~~~~~~~~~~~~~~~~
@@ -9,12 +8,12 @@ socket.
 """
 import struct
 import binascii
+from typing import Any, Iterable, Optional, Type
 
 from .exceptions import (
     UnknownFrameError, InvalidPaddingError, InvalidFrameError, InvalidDataError
 )
 from .flags import Flag, Flags
-from typing import Optional, Tuple, List, Iterable, Any, Dict, Type
 
 
 # The maximum initial length of a frame. Some frames have shorter maximum
@@ -44,7 +43,7 @@ class Frame:
     The base class for all HTTP/2 frames.
     """
     #: The flags defined on this type of frame.
-    defined_flags: List[Flag] = []
+    defined_flags: list[Flag] = []
 
     #: The byte used to define the type of the frame.
     type: Optional[int] = None
@@ -99,7 +98,7 @@ class Frame:
         return _raw_data_repr(self.serialize_body())
 
     @staticmethod
-    def explain(data: memoryview) -> Tuple["Frame", int]:
+    def explain(data: memoryview) -> tuple["Frame", int]:
         """
         Takes a bytestring and tries to parse a single frame and print it.
 
@@ -116,7 +115,7 @@ class Frame:
         return frame, length
 
     @staticmethod
-    def parse_frame_header(header: memoryview, strict: bool = False) -> Tuple["Frame", int]:
+    def parse_frame_header(header: memoryview, strict: bool = False) -> tuple["Frame", int]:
         """
         Takes a 9-byte frame header and returns a tuple of the appropriate
         Frame object and the length that needs to be read from the socket.
@@ -343,7 +342,7 @@ class PriorityFrame(Priority, Frame):
     reprioritisation of existing streams.
     """
     #: The flags defined for PRIORITY frames.
-    defined_flags: List[Flag] = []
+    defined_flags: list[Flag] = []
 
     #: The type byte defined for PRIORITY frames.
     type = 0x02
@@ -381,7 +380,7 @@ class RstStreamFrame(Frame):
     occurred.
     """
     #: The flags defined for RST_STREAM frames.
-    defined_flags: List[Flag] = []
+    defined_flags: list[Flag] = []
 
     #: The type byte defined for RST_STREAM frames.
     type = 0x03
@@ -454,7 +453,7 @@ class SettingsFrame(Frame):
     #: The byte that signals SETTINGS_ENABLE_CONNECT_PROTOCOL setting.
     ENABLE_CONNECT_PROTOCOL = 0x08
 
-    def __init__(self, stream_id: int = 0, settings: Optional[Dict[int, int]] = None, **kwargs: Any) -> None:
+    def __init__(self, stream_id: int = 0, settings: Optional[dict[int, int]] = None, **kwargs: Any) -> None:
         super().__init__(stream_id, **kwargs)
 
         if settings and "ACK" in kwargs.get("flags", ()):
@@ -463,7 +462,7 @@ class SettingsFrame(Frame):
             )
 
         #: A dictionary of the setting type byte to the value of the setting.
-        self.settings = settings or {}
+        self.settings: dict[int, int] = settings or {}
 
     def _body_repr(self) -> str:
         return "settings={}".format(
@@ -611,7 +610,7 @@ class GoAwayFrame(Frame):
     connection.
     """
     #: The flags defined for GOAWAY frames.
-    defined_flags: List[Flag] = []
+    defined_flags: list[Flag] = []
 
     #: The type byte defined for GOAWAY frames.
     type = 0x07
@@ -679,7 +678,7 @@ class WindowUpdateFrame(Frame):
     original sender.
     """
     #: The flags defined for WINDOW_UPDATE frames.
-    defined_flags: List[Flag] = []
+    defined_flags: list[Flag] = []
 
     #: The type byte defined for WINDOW_UPDATE frames.
     type = 0x08
@@ -951,7 +950,7 @@ def _raw_data_repr(data: Optional[bytes]) -> str:
     return "<hex:" + r + ">"
 
 
-_FRAME_CLASSES: List[Type[Frame]] = [
+_FRAME_CLASSES: list[Type[Frame]] = [
     DataFrame,
     HeadersFrame,
     PriorityFrame,
