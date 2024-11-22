@@ -16,10 +16,8 @@ dev
 - Support for Python 3.11 has been added.
 - Support for Python 3.12 has been added.
 - Support for Python 3.13 has been added.
-
-**Bugfixes**
-
--
+- Improved type hints.
+- Updated packaging and testing infrastructure.
 
 6.0.1 (2021-04-17)
 ------------------
