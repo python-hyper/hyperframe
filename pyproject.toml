@@ -2,7 +2,7 @@
 # https://packaging.python.org/en/latest/specifications/pyproject-toml/
 
 [build-system]
-requires = ["setuptools"]
+requires = ["setuptools>=75.6.0"]
 build-backend = "setuptools.build_meta"
 
 [project]
@@ -92,8 +92,41 @@ ignore = [
 ]
 
 [tool.ruff]
-line-length = 140
+line-length = 150
 target-version = "py39"
+format.preview = true
+format.docstring-code-line-length = 100
+format.docstring-code-format = true
+lint.select = [
+  "ALL",
+]
+lint.ignore = [
+  "ANN401",  # kwargs with typing.Any
+  "CPY",     # not required
+  "D101",    # docs readability
+  "D102",    # docs readability
+  "D105",    # docs readability
+  "D107",    # docs readability
+  "D200",    # docs readability
+  "D205",    # docs readability
+  "D205",    # docs readability
+  "D203",    # docs readability
+  "D212",    # docs readability
+  "D400",    # docs readability
+  "D401",    # docs readability
+  "D415",    # docs readability
+  "PLR2004", # readability
+  "SIM108",  # readability
+  "RUF012",  # readability
+  "FBT001",  # readability
+  "FBT002",  # readability
+  "PGH003",  # readability
+]
+lint.isort.required-imports = [ "from __future__ import annotations" ]
+
+[tool.mypy]
+show_error_codes = true
+strict = true
 
 [tool.coverage.run]
 branch = true
@@ -104,7 +137,7 @@ fail_under = 100
 show_missing = true
 exclude_lines = [
   "pragma: no cover",
-  "raise NotImplementedError()",
+  "raise NotImplementedError",
 ]
 
 [tool.coverage.paths]
