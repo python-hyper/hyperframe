@@ -1,7 +1,6 @@
 """
-hyperframe
-~~~~~~~~~~
-
-A module for providing a pure-Python HTTP/2 framing layer.
+Provides a pure-Python HTTP/2 framing layer.
 """
-__version__ = '6.1.0+dev'
+from __future__ import annotations
+
+__version__ = "6.1.0+dev"
