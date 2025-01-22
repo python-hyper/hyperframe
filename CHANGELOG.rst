@@ -1,8 +1,8 @@
 Release History
 ===============
 
-dev
----
+6.1.0 (2025-01-22)
+------------------
 
 **API Changes (Backward Incompatible)**
 
@@ -16,8 +16,9 @@ dev
 - Support for Python 3.11 has been added.
 - Support for Python 3.12 has been added.
 - Support for Python 3.13 has been added.
-- Improved type hints.
 - Updated packaging and testing infrastructure.
+- Code cleanup and linting.
+- Improved type hints.
 
 6.0.1 (2021-04-17)
 ------------------
