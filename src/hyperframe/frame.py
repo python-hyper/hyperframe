@@ -457,7 +457,7 @@ class SettingsFrame(Frame):
         return f"settings={self.settings}"
 
     def serialize_body(self) -> bytes:
-        return b"".join([_STRUCT_HL.pack(setting & 0xFF, value)
+        return b"".join([_STRUCT_HL.pack(setting & 0xFFFF, value)
                          for setting, value in self.settings.items()])
 
     def parse_body(self, data: memoryview) -> None:
