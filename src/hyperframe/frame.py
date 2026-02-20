@@ -639,6 +639,7 @@ class GoAwayFrame(Frame):
             msg = "Invalid GOAWAY body."
             raise InvalidFrameError(msg) from err
 
+        self.last_stream_id = self.last_stream_id & 0x7FFFFFFF
         self.body_len = len(data)
 
         if len(data) > 8:
@@ -689,6 +690,8 @@ class WindowUpdateFrame(Frame):
         except struct.error as err:
             msg = "Invalid WINDOW_UPDATE body"
             raise InvalidFrameError(msg) from err
+
+        self.window_increment = self.window_increment & 0x7FFFFFFF
 
         if not 1 <= self.window_increment <= 2**31-1:
             msg = "WINDOW_UPDATE increment must be between 1 to 2^31-1"
