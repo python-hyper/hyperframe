@@ -670,6 +670,35 @@ class TestGoAwayFrame:
         with pytest.raises(InvalidFrameError):
             decode_frame(s)
 
+    def test_goaway_frame_with_reserved_bit_set_parses_properly(self):
+        s = (
+            b'\x00\x00\x0D\x07\x00\x00\x00\x00\x00' +  # Frame header
+            b'\x80\x00\x00\x40' +                      # Last Stream ID with reserved bit set
+            b'\x00\x00\x00\x20' +                      # Error Code
+            b'hello'                                   # Additional data
+        )
+        f = decode_frame(s)
+
+        assert isinstance(f, GoAwayFrame)
+        assert f.flags == set()
+        assert f.additional_data == b'hello'
+        assert f.body_len == 13
+        assert f.last_stream_id == 64
+
+    def test_goaway_frame_with_reserved_bit_set_serializes_properly(self):
+        f = GoAwayFrame()
+        f.last_stream_id = 64
+        f.error_code = 32
+        f.additional_data = b'hello'
+
+        s = f.serialize()
+        assert s == (
+            b'\x00\x00\x0D\x07\x00\x00\x00\x00\x00' +  # Frame header
+            b'\x00\x00\x00\x40' +                      # Last Stream ID
+            b'\x00\x00\x00\x20' +                      # Error Code
+            b'hello'                                   # Additional data
+        )
+
 
 class TestWindowUpdateFrame:
     def test_repr(self):
@@ -716,6 +745,22 @@ class TestWindowUpdateFrame:
 
         with pytest.raises(InvalidDataError):
             decode_frame(WindowUpdateFrame(2**31).serialize())
+
+    def test_window_update_frame_with_reserved_bit_set_parses_properly(self):
+        s = b'\x00\x00\x04\x08\x00\x00\x00\x00\x80\x00\x00\x02\x00'
+        f = decode_frame(s)
+
+        assert isinstance(f, WindowUpdateFrame)
+        assert f.flags == set()
+        assert f.window_increment == 512
+        assert f.body_len == 4
+
+    def test_window_update_frame_with_reserved_bit_set_serializes_properly(self):
+        f = WindowUpdateFrame(0)
+        f.window_increment = 512
+
+        s = f.serialize()
+        assert s == b'\x00\x00\x04\x08\x00\x00\x00\x00\x00\x00\x00\x02\x00'
 
 
 class TestHeadersFrame:

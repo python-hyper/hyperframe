@@ -7,6 +7,9 @@ dev
 **API Changes (Backward Compatible)**
 
 - Setting Identifier are now correctly serialized as 16-bit values, instead of 8-bit.
+- GoAwayFrame and WindowUpdateFrame now correctly mask off the reserved bit during
+  parsing and serialization of stream IDs and window increments, as per RFC 9113,
+  Sections 6.8 and 6.9.
 
 **API Changes (Backward Incompatible)**
 
