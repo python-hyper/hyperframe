@@ -10,10 +10,12 @@ dev
 - GoAwayFrame and WindowUpdateFrame now correctly mask off the reserved bit during
   parsing and serialization of stream IDs and window increments, as per RFC 9113,
   Sections 6.8 and 6.9.
+- Support for Python 3.14 has been added.
 
 **API Changes (Backward Incompatible)**
 
--
+- Support for PyPy 3.9 has been removed.
+- Support for Python 3.9 has been removed.
 
 **Bugfixes**
 

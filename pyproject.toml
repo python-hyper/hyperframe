@@ -2,7 +2,7 @@
 # https://packaging.python.org/en/latest/specifications/pyproject-toml/
 
 [build-system]
-requires = ["setuptools>=75.6.0"]
+requires = ["setuptools>=82", "wheel>=0.46.3"]
 build-backend = "setuptools.build_meta"
 
 [project]
@@ -18,7 +18,7 @@ maintainers = [
   { name = "Thomas Kriechbaumer", email = "thomas@kriechbaumer.name" },
 ]
 
-requires-python = ">=3.9"
+requires-python = ">=3.10"
 dependencies = []
 dynamic = ["version"]
 
@@ -30,13 +30,12 @@ classifiers = [
   "Programming Language :: Python",
   "Programming Language :: Python :: 3 :: Only",
   "Programming Language :: Python :: 3",
-  "Programming Language :: Python :: 3.9",
   "Programming Language :: Python :: 3.10",
   "Programming Language :: Python :: 3.11",
   "Programming Language :: Python :: 3.12",
   "Programming Language :: Python :: 3.13",
+  "Programming Language :: Python :: 3.14",
   "Programming Language :: Python :: Implementation :: CPython",
-  "Programming Language :: Python :: Implementation :: PyPy",
 ]
 
 [project.urls]
@@ -65,15 +64,14 @@ linting = [
 ]
 
 packaging = [
-  "check-manifest==0.50",
-  "readme-renderer==44.0",
-  "build>=1.2.2,<2",
-  "twine>=5.1.1,<6",
-  "wheel>=0.45.0,<1",
+  "check-manifest==0.51",
+  "build>=1.4.2,<2",
+  "twine>=6.2.0,<7",
+  "wheel>=0.46.3,<1",
 ]
 
 docs = [
-  "sphinx>=7.4.7,<9",
+  "sphinx>=9.1.0,<10",
 ]
 
 [tool.setuptools.packages.find]
@@ -93,7 +91,7 @@ ignore = [
 
 [tool.ruff]
 line-length = 150
-target-version = "py39"
+target-version = "py314"
 format.preview = true
 format.docstring-code-line-length = 100
 format.docstring-code-format = true
@@ -148,16 +146,15 @@ source = [
 
 [tool.tox]
 min_version = "4.23.2"
-env_list = [ "py39", "py310", "py311", "py312", "py313", "pypy3", "lint", "docs", "packaging" ]
+env_list = [ "py310", "py311", "py312", "py313", "py314", "lint", "docs", "packaging" ]
 
 [tool.tox.gh-actions]
 python = """
-  3.9: py39, h2spec, lint, docs, packaging
-  3.10: py310
+  3.10: py310, h2spec, lint, docs, packaging
   3.11: py311
   3.12: py312
   3.13: py313
-  pypy3: pypy3
+  3.14: py314
 """
 
 [tool.tox.env_run_base]
@@ -167,12 +164,6 @@ pass_env = [
 dependency_groups = ["testing"]
 commands = [
   ["pytest", "--cov-report=xml", "--cov-report=term", "--cov=hyperframe", { replace = "posargs", extend = true }]
-]
-
-[tool.tox.env.pypy3]
-# temporarily disable coverage testing on PyPy due to performance problems
-commands = [
-  ["pytest", { replace = "posargs", extend = true }]
 ]
 
 [tool.tox.env.lint]
@@ -192,7 +183,7 @@ commands = [
 ]
 
 [tool.tox.env.packaging]
-base_python = ["python39"]
+base_python = ["python3.10"]
 dependency_groups = ["packaging"]
 allowlist_externals = ["rm"]
 commands = [
@@ -203,7 +194,7 @@ commands = [
 ]
 
 [tool.tox.env.publish]
-base_python = ["python39"]
+base_python = ["python3.10"]
 dependency_groups = ["packaging"]
 allowlist_externals = ["twine"]
 commands = [

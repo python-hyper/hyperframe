@@ -225,7 +225,7 @@ class Padding:
     #:    Use self.pad_length instead.
     @property
     def total_padding(self) -> int:  # pragma: no cover
-        import warnings
+        import warnings  # noqa: PLC0415
         warnings.warn(
             "total_padding contains the same information as pad_length.",
             DeprecationWarning,

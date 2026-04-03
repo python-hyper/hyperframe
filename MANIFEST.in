@@ -7,4 +7,4 @@ prune tests/http2-frame-test-case
 
 include README.rst LICENSE CHANGELOG.rst CONTRIBUTORS.rst pyproject.toml .gitmodules
 
-global-exclude *.pyc *.pyo *.swo *.swp *.map *.yml *.DS_Store
+global-exclude *.pyc *.pyo *.swo *.swp *.map *.yml *.DS_Store .readthedocs.yaml

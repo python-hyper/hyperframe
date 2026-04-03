@@ -10,21 +10,19 @@ jobs:
   tox:
     runs-on: ubuntu-latest
     strategy:
-      max-parallel: 5
       matrix:
         python-version:
-        - "3.9"
         - "3.10"
         - "3.11"
         - "3.12"
         - "3.13"
-        - "pypy3.9"
+        - "3.14"
 
     steps:
-    - uses: actions/checkout@v2
+    - uses: actions/checkout@v6
       with:
         submodules: recursive
-    - uses: actions/setup-python@v5
+    - uses: actions/setup-python@v6
       with:
         python-version: ${{ matrix.python-version }}
     - name: Install tox
@@ -37,7 +35,7 @@ jobs:
     - name: Test with tox
       run: |
         tox --parallel 0
-    - uses: codecov/codecov-action@v5
+    - uses: codecov/codecov-action@v6
       with:
         token: ${{ secrets.CODECOV_TOKEN }}
         files: ./coverage.xml
