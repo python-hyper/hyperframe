@@ -132,7 +132,7 @@ class Frame:
         length = (fields[0] << 8) + fields[1]
         typ_e = fields[2]
         flags = fields[3]
-        stream_id = fields[4] & 0x7FFFFFFF
+        stream_id = fields[4] & 0x7FFFFFFF # mask off the reserved bit, RFC 9113, Section 4.1
 
         try:
             frame = FRAMES[typ_e](stream_id)
@@ -172,7 +172,7 @@ class Frame:
             self.body_len & 0xFF,
             self.type,
             flags,
-            self.stream_id & 0x7FFFFFFF,  # Stream ID is 32 bits.
+            self.stream_id & 0x7FFFFFFF,  # mask off the reserved bit, RFC 9113, Section 4.1
         )
 
         return header + body
@@ -271,7 +271,7 @@ class Priority:
             raise InvalidFrameError(msg) from err
 
         self.exclusive = bool(self.depends_on >> 31)
-        self.depends_on &= 0x7FFFFFFF
+        self.depends_on &= 0x7FFFFFFF  # mask off the exclusive bit, RFC 9113, Section 6.3
         return 5
 
 
@@ -623,7 +623,7 @@ class GoAwayFrame(Frame):
 
     def serialize_body(self) -> bytes:
         data = _STRUCT_LL.pack(
-            self.last_stream_id & 0x7FFFFFFF,
+            self.last_stream_id & 0x7FFFFFFF, # mask off the reserved bit, RFC 9113, Section 6.8
             self.error_code,
         )
         data += self.additional_data
@@ -639,6 +639,7 @@ class GoAwayFrame(Frame):
             msg = "Invalid GOAWAY body."
             raise InvalidFrameError(msg) from err
 
+        # mask off the reserved bit, RFC 9113, Section 6.8
         self.last_stream_id = self.last_stream_id & 0x7FFFFFFF
         self.body_len = len(data)
 
@@ -678,7 +679,9 @@ class WindowUpdateFrame(Frame):
         return f"window_increment={self.window_increment}"
 
     def serialize_body(self) -> bytes:
-        return _STRUCT_L.pack(self.window_increment & 0x7FFFFFFF)
+        return _STRUCT_L.pack(
+            self.window_increment & 0x7FFFFFFF, # mask off the reserved bit, RFC 9113, Section 6.9
+        )
 
     def parse_body(self, data: memoryview) -> None:
         if len(data) > 4:
@@ -691,6 +694,7 @@ class WindowUpdateFrame(Frame):
             msg = "Invalid WINDOW_UPDATE body"
             raise InvalidFrameError(msg) from err
 
+        # mask off the reserved bit, RFC 9113, Section 6.9
         self.window_increment = self.window_increment & 0x7FFFFFFF
 
         if not 1 <= self.window_increment <= 2**31-1:
@@ -910,7 +914,7 @@ class ExtensionFrame(Frame):
             self.body_len & 0xFF,
             self.type,
             flags,
-            self.stream_id & 0x7FFFFFFF,  # Stream ID is 32 bits.
+            self.stream_id & 0x7FFFFFFF,  # mask off the reserved bit, RFC 9113, Section 4.1
         )
 
         return header + self.body
