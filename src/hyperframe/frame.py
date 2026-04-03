@@ -457,8 +457,11 @@ class SettingsFrame(Frame):
         return f"settings={self.settings}"
 
     def serialize_body(self) -> bytes:
-        return b"".join([_STRUCT_HL.pack(setting & 0xFFFF, value)
-                         for setting, value in self.settings.items()])
+        return b"".join([_STRUCT_HL.pack(
+            setting_identifier & 0xFFFF, # Settings identifiers are 16 bits, mask them appropriately, RFC 9113, Section 6.5.1
+            setting_value & 0xFFFFFFFF,  # Settings values are 32 bits, mask them appropriately, RFC 9113, Section 6.5.1
+        )
+                         for setting_identifier, setting_value in self.settings.items()])
 
     def parse_body(self, data: memoryview) -> None:
         if "ACK" in self.flags and len(data) > 0:

@@ -426,6 +426,29 @@ class TestSettingsFrame:
         with pytest.raises(InvalidDataError):
             decode_frame(self.serialized[:-2])
 
+    def test_settings_frame_with_large_setting_ids(self):
+        f = SettingsFrame()
+        f.settings[0xFFFE] = 12345
+        f.settings[0xFFFF] = 54321
+
+        s = f.serialize()
+        new_f = decode_frame(s)
+
+        assert new_f.settings[0xFFFE] == 12345
+        assert new_f.settings[0xFFFF] == 54321
+
+    def test_settings_frame_serializes_with_large_setting_ids(self):
+        f = SettingsFrame()
+        f.settings[0xFFFE] = 12345
+        f.settings[0xFFFF] = 54321
+
+        s = f.serialize()
+        assert s == (
+            b'\x00\x00\x0C\x04\x00\x00\x00\x00\x00' +  # Frame header
+            b'\xFF\xFE\x00\x00\x30\x39' +              # Setting ID 0xFFFE
+            b'\xFF\xFF\x00\x00\xd4\x31'                # Setting ID 0xFFFF
+        )
+
 
 class TestPushPromiseFrame:
     def test_repr(self):

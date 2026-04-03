@@ -4,6 +4,10 @@ Release History
 dev
 ---
 
+**API Changes (Backward Compatible)**
+
+- Setting Identifier are now correctly serialized as 16-bit values, instead of 8-bit.
+
 **API Changes (Backward Incompatible)**
 
 -
