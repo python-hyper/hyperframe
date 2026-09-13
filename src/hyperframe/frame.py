@@ -905,6 +905,8 @@ class ExtensionFrame(Frame):
         user code: it exists only as a helper method if frames need to be
         reconstituted.
         """
+        self.body_len = len(self.body)
+
         # Build the frame header.
         # First, get the flags.
         flags = self.flag_byte

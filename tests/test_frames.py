@@ -995,3 +995,16 @@ class TestExtensionFrame:
     def test_repr(self):
         f = ExtensionFrame(0xFF, 1, 42, b'hello')
         assert repr(f).endswith("type=255, flag_byte=42, body=<hex:68656c6c6f>")
+
+
+@pytest.mark.parametrize('body', [b'', b'hello', b'x' * 256])
+def test_extension_frame_serialized_body_length(body):
+    frame = ExtensionFrame(0xFF, 1, 42, body)
+    decoded = decode_frame(frame.serialize())
+    assert decoded.body == body
+    assert decoded.body_len == len(body)
+    assert decoded.flag_byte == 42
+    frame.body = b'replacement'
+    decoded = decode_frame(frame.serialize())
+    assert decoded.body == b'replacement'
+    assert decoded.body_len == len(frame.body)
