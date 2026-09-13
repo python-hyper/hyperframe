@@ -19,7 +19,8 @@ dev
 
 **Bugfixes**
 
--
+- Mask the reserved bit in PUSH_PROMISE stream identifiers when parsing and
+  serializing.
 
 6.1.0 (2025-01-22)
 ------------------

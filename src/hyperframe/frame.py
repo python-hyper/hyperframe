@@ -515,7 +515,7 @@ class PushPromiseFrame(Padding, Frame):
     def serialize_body(self) -> bytes:
         padding_data = self.serialize_padding_data()
         padding = b"\0" * self.pad_length
-        data = _STRUCT_L.pack(self.promised_stream_id)
+        data = _STRUCT_L.pack(self.promised_stream_id & 0x7FFFFFFF)
         return b"".join([padding_data, data, self.data, padding])
 
     def parse_body(self, data: memoryview) -> None:
@@ -528,6 +528,9 @@ class PushPromiseFrame(Padding, Frame):
         except struct.error as err:
             msg = "Invalid PUSH_PROMISE body"
             raise InvalidFrameError(msg) from err
+
+        # Ignore the reserved bit, RFC 9113, Section 6.6.
+        self.promised_stream_id &= 0x7FFFFFFF
 
         self.data = (
             data[padding_data_length + 4:len(data)-self.pad_length].tobytes()
