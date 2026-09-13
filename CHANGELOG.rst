@@ -19,7 +19,7 @@ dev
 
 **Bugfixes**
 
--
+- Recalculate the body length when serializing an ExtensionFrame.
 
 6.1.0 (2025-01-22)
 ------------------
