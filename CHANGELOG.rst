@@ -19,7 +19,8 @@ dev
 
 **Bugfixes**
 
--
+- Preserve the full padded HEADERS body length and reject padding that overlaps
+  fixed fields in HEADERS and PUSH_PROMISE frames.
 
 6.1.0 (2025-01-22)
 ------------------

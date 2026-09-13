@@ -538,7 +538,7 @@ class PushPromiseFrame(Padding, Frame):
             msg = f"Invalid PUSH_PROMISE promised stream id: {self.promised_stream_id}"
             raise InvalidDataError(msg)
 
-        if self.pad_length and self.pad_length >= self.body_len:
+        if self.pad_length > self.body_len - padding_data_length - 4:
             msg = "Padding is too long."
             raise InvalidPaddingError(msg)
 
@@ -751,6 +751,7 @@ class HeadersFrame(Padding, Priority, Frame):
         return b"".join([padding_data, priority_data, self.data, padding])
 
     def parse_body(self, data: memoryview) -> None:
+        self.body_len = len(data)
         padding_data_length = self.parse_padding_data(data)
         data = data[padding_data_length:]
 
@@ -759,12 +760,11 @@ class HeadersFrame(Padding, Priority, Frame):
         else:
             priority_data_length = 0
 
-        self.body_len = len(data)
         self.data = (
             data[priority_data_length:len(data)-self.pad_length].tobytes()
         )
 
-        if self.pad_length and self.pad_length >= self.body_len:
+        if self.pad_length > len(data) - priority_data_length:
             msg = "Padding is too long."
             raise InvalidPaddingError(msg)
 

@@ -995,3 +995,32 @@ class TestExtensionFrame:
     def test_repr(self):
         f = ExtensionFrame(0xFF, 1, 42, b'hello')
         assert repr(f).endswith("type=255, flag_byte=42, body=<hex:68656c6c6f>")
+
+
+@pytest.mark.parametrize('pad_length', [0, 1, 5])
+@pytest.mark.parametrize('payload', [b'', b'hello'])
+@pytest.mark.parametrize('priority', [False, True])
+def test_padded_headers_body_length(pad_length, payload, priority):
+    flags = ['PADDED', 'END_HEADERS']
+    if priority:
+        flags.append('PRIORITY')
+    frame = HeadersFrame(1, flags=flags, pad_length=pad_length, data=payload)
+    wire = frame.serialize()
+    decoded = decode_frame(wire)
+    assert decoded.data == payload
+    assert decoded.body_len == len(wire) - 9
+    assert decoded.serialize() == wire
+
+
+@pytest.mark.parametrize('frame_type', [HeadersFrame, PushPromiseFrame])
+def test_padding_cannot_overlap_fixed_fields(frame_type):
+    # The pad-length byte claims one padding byte, but all remaining bytes
+    # belong to the mandatory priority or promised-stream-ID field.
+    if frame_type is HeadersFrame:
+        frame = HeadersFrame(1, flags=['PADDED', 'PRIORITY'])
+        body = b'\x01\x00\x00\x00\x00\x00'
+    else:
+        frame = PushPromiseFrame(1, flags=['PADDED'])
+        body = b'\x01\x00\x00\x00\x02'
+    with pytest.raises(InvalidPaddingError):
+        frame.parse_body(memoryview(body))
