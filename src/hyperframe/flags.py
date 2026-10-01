@@ -4,7 +4,9 @@ Basic Flag and Flags data structures.
 from __future__ import annotations
 
 from collections.abc import Iterable, Iterator, MutableSet
-from typing import NamedTuple
+from typing import NamedTuple, TypeVar
+
+_T = TypeVar("_T")
 
 
 class Flag(NamedTuple):
@@ -18,12 +20,19 @@ class Flags(MutableSet):  # type: ignore
     elements.
 
     Will behave like a regular set(), except that a ValueError will be thrown
-    when .add()ing unexpected flags.
+    when .add()ing unexpected flags. Non-mutating set operations return
+    regular sets.
     """
 
     def __init__(self, defined_flags: Iterable[Flag]) -> None:
         self._valid_flags = {flag.name for flag in defined_flags}
         self._flags: set[str] = set()
+
+    @classmethod
+    def _from_iterable(cls, it: Iterable[_T]) -> set[_T]:
+        # The set mixins pass flag names, not the definitions our constructor
+        # needs. Results are ordinary sets; in-place operations still validate.
+        return set(it)
 
     def __repr__(self) -> str:
         return repr(sorted(self._flags))

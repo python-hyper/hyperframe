@@ -19,7 +19,8 @@ dev
 
 **Bugfixes**
 
--
+- Fix set operations on frame flags raising ``AttributeError``, including
+  in-place intersection. Non-mutating operations now return ordinary sets.
 
 6.1.0 (2025-01-22)
 ------------------
