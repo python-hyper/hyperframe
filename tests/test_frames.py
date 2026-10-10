@@ -112,6 +112,37 @@ class TestGeneralFrameBehaviour:
         with pytest.raises(InvalidFrameError):
             Frame.parse_frame_header(b'\x00\x00\x08\x00\x01\x00\x00\x00')
 
+    @pytest.mark.parametrize('frame_type', [DataFrame, HeadersFrame, PushPromiseFrame])
+    @pytest.mark.parametrize('pad_length', [0, 1, 255])
+    @pytest.mark.parametrize('remove_flag', [False, True])
+    def test_unpadded_frames_omit_configured_padding(self, frame_type, pad_length, remove_flag):
+        # 2026-10-11: A cleared PADDED flag must not turn padding into payload.
+        f = frame_type(1, data=b'hello', pad_length=pad_length)
+        fixed_length = 0
+        if frame_type is HeadersFrame:
+            f.flags.add('PRIORITY')
+            fixed_length = 5
+        elif frame_type is PushPromiseFrame:
+            f.promised_stream_id = 2
+            fixed_length = 4
+        if remove_flag:
+            f.flags.add('PADDED')
+            assert decode_frame(f.serialize()).data == b'hello'
+            f.flags.discard('PADDED')
+
+        wire = f.serialize()
+        decoded = decode_frame(wire)
+        assert decoded.data == b'hello'
+        assert len(wire) - 9 == fixed_length + len(b'hello')
+        assert decoded.pad_length == 0
+        if frame_type is DataFrame:
+            assert f.flow_controlled_length == len(wire) - 9
+
+        f.flags.add('PADDED')
+        decoded = decode_frame(f.serialize())
+        assert decoded.data == b'hello'
+        assert decoded.pad_length == pad_length
+
 
 class TestDataFrame:
     payload = b'\x00\x00\x08\x00\x01\x00\x00\x00\x01testdata'

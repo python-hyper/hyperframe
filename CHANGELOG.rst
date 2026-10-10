@@ -19,7 +19,8 @@ dev
 
 **Bugfixes**
 
--
+- Omit configured padding from DATA, HEADERS, and PUSH_PROMISE frames when the
+  PADDED flag is unset.
 
 6.1.0 (2025-01-22)
 ------------------

@@ -301,7 +301,8 @@ class DataFrame(Padding, Frame):
 
     def serialize_body(self) -> bytes:
         padding_data = self.serialize_padding_data()
-        padding = b"\0" * self.pad_length
+        # 2026-10-11: Padding is payload unless the PADDED flag describes it.
+        padding = b"\0" * self.pad_length if "PADDED" in self.flags else b""
         if isinstance(self.data, memoryview):
             self.data = self.data.tobytes()
         return b"".join([padding_data, self.data, padding])
@@ -514,7 +515,8 @@ class PushPromiseFrame(Padding, Frame):
 
     def serialize_body(self) -> bytes:
         padding_data = self.serialize_padding_data()
-        padding = b"\0" * self.pad_length
+        # 2026-10-11: Padding is payload unless the PADDED flag describes it.
+        padding = b"\0" * self.pad_length if "PADDED" in self.flags else b""
         data = _STRUCT_L.pack(self.promised_stream_id)
         return b"".join([padding_data, data, self.data, padding])
 
@@ -741,7 +743,8 @@ class HeadersFrame(Padding, Priority, Frame):
 
     def serialize_body(self) -> bytes:
         padding_data = self.serialize_padding_data()
-        padding = b"\0" * self.pad_length
+        # 2026-10-11: Padding is payload unless the PADDED flag describes it.
+        padding = b"\0" * self.pad_length if "PADDED" in self.flags else b""
 
         if "PRIORITY" in self.flags:
             priority_data = self.serialize_priority_data()
