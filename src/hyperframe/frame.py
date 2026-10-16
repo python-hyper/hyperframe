@@ -446,7 +446,7 @@ class SettingsFrame(Frame):
     def __init__(self, stream_id: int = 0, settings: dict[int, int] | None = None, **kwargs: Any) -> None:
         super().__init__(stream_id, **kwargs)
 
-        if settings and "ACK" in kwargs.get("flags", ()):
+        if settings and "ACK" in self.flags:
             msg = "Settings must be empty if ACK flag is set."
             raise InvalidDataError(msg)
 

@@ -19,7 +19,8 @@ dev
 
 **Bugfixes**
 
--
+- Reject nonempty SETTINGS with ACK even when flags are supplied as an iterator
+  or generator.
 
 6.1.0 (2025-01-22)
 ------------------

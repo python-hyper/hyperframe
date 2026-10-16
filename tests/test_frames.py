@@ -382,22 +382,46 @@ class TestSettingsFrame:
         s = f.serialize()
         assert s == self.serialized
 
-    def test_settings_frame_with_settings(self):
-        f = SettingsFrame(settings=self.settings)
+    @pytest.mark.parametrize(
+        'make_flags', [list, tuple, iter, lambda flags: (flag for flag in flags)],
+        ids=['list', 'tuple', 'iterator', 'generator'],
+    )
+    def test_settings_frame_with_settings(self, make_flags):
+        f = SettingsFrame(settings=self.settings, flags=make_flags([]))
         assert f.settings == self.settings
+        parsed = decode_frame(f.serialize())
+        assert parsed.settings == self.settings
+        assert parsed.flags == set()
 
     def test_settings_frame_without_settings(self):
         f = SettingsFrame()
         assert f.settings == {}
 
-    def test_settings_frame_with_ack(self):
-        f = SettingsFrame(flags=('ACK',))
+    @pytest.mark.parametrize(
+        'make_flags', [list, tuple, iter, lambda flags: (flag for flag in flags)],
+        ids=['list', 'tuple', 'iterator', 'generator'],
+    )
+    @pytest.mark.parametrize('settings', [None, {}])
+    def test_settings_frame_with_ack(self, make_flags, settings):
+        f = SettingsFrame(settings=settings, flags=make_flags(['ACK']))
         assert 'ACK' in f.flags
+        assert f.serialize() == b'\x00\x00\x00\x04\x01\x00\x00\x00\x00'
+        parsed = decode_frame(f.serialize())
+        assert parsed.flags == set(['ACK'])
+        assert parsed.settings == {}
+        assert parsed.body_len == 0
 
-    def test_settings_frame_ack_and_settings(self):
-        with pytest.raises(InvalidDataError):
-            SettingsFrame(settings=self.settings, flags=('ACK',))
+    @pytest.mark.parametrize(
+        'make_flags', [list, tuple, iter, lambda flags: (flag for flag in flags)],
+        ids=['list', 'tuple', 'iterator', 'generator'],
+    )
+    def test_settings_frame_ack_and_settings(self, make_flags):
+        with pytest.raises(
+            InvalidDataError, match='Settings must be empty if ACK flag is set.',
+        ):
+            SettingsFrame(settings=self.settings, flags=make_flags(['ACK']))
 
+    def test_settings_frame_rejects_ack_payload(self):
         with pytest.raises(InvalidDataError):
             decode_frame(self.serialized)
 
