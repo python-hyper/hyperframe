@@ -159,6 +159,10 @@ class Frame:
         body = self.serialize_body()
         self.body_len = len(body)
 
+        if self.body_len > FRAME_MAX_ALLOWED_LEN:
+            msg = f"Frame body exceeds maximum allowed length: {self.body_len} > {FRAME_MAX_ALLOWED_LEN}"
+            raise InvalidFrameError(msg)
+
         # Build the common frame header.
         # First, get the flags.
         flags = 0

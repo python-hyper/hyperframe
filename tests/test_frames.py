@@ -112,6 +112,29 @@ class TestGeneralFrameBehaviour:
         with pytest.raises(InvalidFrameError):
             Frame.parse_frame_header(b'\x00\x00\x08\x00\x01\x00\x00\x00')
 
+    @pytest.mark.parametrize('frame_type', [DataFrame, ContinuationFrame])
+    def test_serialize_maximum_frame_length(self, frame_type):
+        f = frame_type(1, data=b'x' * 0xFFFFFF)
+        wire = f.serialize()
+
+        assert wire[:3] == b'\xFF\xFF\xFF'
+        assert f.body_len == len(wire) - 9 == 0xFFFFFF
+        assert decode_frame(wire).data == f.data
+
+    @pytest.mark.parametrize('frame_type', [DataFrame, ContinuationFrame])
+    @pytest.mark.parametrize('body_length', [0x1000000, 0x1000001])
+    def test_serialize_rejects_unrepresentable_frame_length(self, frame_type, body_length):
+        f = frame_type(1, data=b'x' * body_length)
+
+        with pytest.raises(InvalidFrameError):
+            f.serialize()
+
+    def test_serialize_length_limit_includes_padding_length_field(self):
+        f = DataFrame(1, data=b'x' * 0xFFFFFF, flags=['PADDED'])
+
+        with pytest.raises(InvalidFrameError):
+            f.serialize()
+
 
 class TestDataFrame:
     payload = b'\x00\x00\x08\x00\x01\x00\x00\x00\x01testdata'

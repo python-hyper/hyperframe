@@ -19,7 +19,8 @@ dev
 
 **Bugfixes**
 
--
+- Reject oversized frame bodies in ``Frame.serialize()`` instead of silently
+  truncating their 24-bit serialized length.
 
 6.1.0 (2025-01-22)
 ------------------
