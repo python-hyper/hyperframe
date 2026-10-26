@@ -142,6 +142,12 @@ class TestDataFrame:
         s = f.serialize()
         assert s == self.payload
 
+    def test_plain_data_frame_reuses_bytes_body(self):
+        data = b'testdata'
+        f = DataFrame(1, data)
+
+        assert f.serialize_body() is data
+
     def test_data_frame_with_padding_serializes_properly(self):
         f = DataFrame(1)
         f.flags = set(['END_STREAM', 'PADDED'])
@@ -790,6 +796,12 @@ class TestHeadersFrame:
             b'\x00\x00\x0B\x01\x05\x00\x00\x00\x01' +
             b'hello world'
         )
+
+    def test_plain_headers_frame_reuses_bytes_body(self):
+        data = b'hello world'
+        f = HeadersFrame(1, data)
+
+        assert f.serialize_body() is data
 
     def test_headers_frame_parses_properly(self):
         s = (

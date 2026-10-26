@@ -304,6 +304,10 @@ class DataFrame(Padding, Frame):
         padding = b"\0" * self.pad_length
         if isinstance(self.data, memoryview):
             self.data = self.data.tobytes()
+
+        if type(self.data) is bytes and type(padding_data) is bytes and not padding_data and not padding:
+            return self.data
+
         return b"".join([padding_data, self.data, padding])
 
     def parse_body(self, data: memoryview) -> None:
@@ -747,6 +751,16 @@ class HeadersFrame(Padding, Priority, Frame):
             priority_data = self.serialize_priority_data()
         else:
             priority_data = b""
+
+        if (
+            type(self.data) is bytes
+            and type(padding_data) is bytes
+            and not padding_data
+            and type(priority_data) is bytes
+            and not priority_data
+            and not padding
+        ):
+            return self.data
 
         return b"".join([padding_data, priority_data, self.data, padding])
 

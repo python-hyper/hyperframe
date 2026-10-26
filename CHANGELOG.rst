@@ -19,7 +19,7 @@ dev
 
 **Bugfixes**
 
--
+- Avoided copying unmodified DATA and HEADERS bodies during serialization.
 
 6.1.0 (2025-01-22)
 ------------------
